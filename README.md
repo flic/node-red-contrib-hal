@@ -1,4 +1,4 @@
-# node-red-contrib-hal
+# node-red-contrib-hal [![npm version](https://badge.fury.io/js/node-red-contrib-hal.svg)](https://badge.fury.io/js/node-red-contrib-hal)
 A set of nodes to help with basic home automation logic.
 ## Install
 ```bash
