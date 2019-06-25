@@ -1,0 +1,175 @@
+<script type="text/javascript">
+    RED.nodes.registerType('event',{
+        category: 'Home Automation',
+        color: '#EBA8FF',
+        defaults: {
+            config: {
+                value: "",
+                type: "event-config",
+                required: true
+            },
+            name: {
+                value:""
+            },
+            trigger: {
+                value: "",
+                required: true
+            },
+            operator: {
+                value: "",
+                required: true
+            },
+            compareValue: {
+                value: "",
+                required: false
+            },
+            compareType: {
+                required: false
+            },
+            outputValue: {
+                value: "",
+                required: false
+            },
+            outputType: {
+                required: true
+            }
+        },
+        inputs:0,
+        outputs:1,
+        icon: "hal-event.png",
+        label: function() {
+            return this.name||"event";
+        },
+        oneditprepare: function () {
+            var operators = [
+                { v: "update", t: "is updated"},               
+                { v: "change", t: "changes"},
+                { v: "eq", t: "==" },
+                { v: "neq", t: "!=" },
+                { v: "lt", t: "<" },
+                { v: "lte", t: "<=" },
+                { v: "gt", t: ">" },
+                { v: "gte", t: ">=" },
+                { v: "btwn", t: "is between" },
+                { v: "cont", t: "contains" },
+                { v: "regex", t: "matches regex" },
+                { v: "true", t: "is true" },
+                { v: "false", t: "is false" },
+                { v: "null", t: "is null" },
+                { v: "nnull", t: "is not null" }
+            ];
+            //get all item nodes
+            var itemsList = [];
+            RED.nodes.eachNode(function (cf) {
+                if (cf.type === "item") {
+                    itemsList.push(cf);
+                }
+            });
+
+            //Add items
+            for (var d in itemsList) {
+                $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-trigger");
+            }
+            if (this.trigger) {
+                $("#node-input-trigger").val(this.trigger);
+                $('#node-input-trigger').trigger('change');
+            }
+            //Add operators
+            for (var d in operators) {
+                $("<option value='" + operators[d].v + "'> " + operators[d].t + "</option>").appendTo("#node-input-operator");
+            }
+            if (this.operator) {
+                $("#node-input-operator").val(this.operator);
+                $('#node-input-operator').trigger('change');
+            } else {
+                $("#node-input-operator").val(operators[0].v);
+                $('#node-input-operator').trigger('change');  
+            }
+            //Add comparison value
+            $('#node-input-compareValue').typedInput({
+                default: 'num',
+                typeField: $("#node-input-compareType"),
+                types: ['str','num','json']
+            });
+            if (this.compareValue) {
+                $("#node-input-compareValue").typedInput('value',this.compareValue).typedInput('type',this.compareType);                           
+            } 
+
+            //Add output
+            var fullType = {
+                value: "full",
+                label: "complete msg object",
+                hasValue: false
+            };
+            var stateType = {
+                value: "state",
+                label: "item state",
+                hasValue: false
+            };
+            $('#node-input-outputValue').typedInput({
+                default: 'state',
+                typeField: $("#node-input-outputType"),
+                types: [stateType,'msg',fullType,'flow','global','str','num','bool','json']
+            });
+            if (this.outputType) {
+                $("#node-input-outputValue").typedInput('type',this.outputType);
+            }
+            if (this.outputValue) {
+                if (typeof this.outputValue == 'object') {
+                        this.outputValue = JSON.stringify(this.outputValue);
+                    }
+                $("#node-input-outputValue").typedInput('value',this.outputValue);
+            } else {
+                $("#node-input-outputValue").typedInput('value','payload');
+ 
+            }
+            //Show/Hide value field
+            $("#node-input-operator").change( function() {
+                var type = $("#node-input-operator").children("option:selected").val();
+                if (type.length < 4) {
+                        $("#node-input-operator").css({ "width": "60px" });
+                    } else if (type === "regex") {
+                        $("#node-input-operator").css({ "width": "137px" });
+                    } else {
+                        $("#node-input-operator").css({ "width": "120px" });
+                    }
+                if (type == "full" || type == "update" || type == "change" || type === "true" || type === "false" || type === "null" || type === "nnull" || type === "else") {
+                    $("#node-input-compareValue").typedInput('hide');
+                } else {
+                    $("#node-input-compareValue").typedInput('show');
+                }
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="event">
+    <div class="form-row">
+            <label for="node-input-config"><i class="fa fa-bookmark"></i> Config</label>
+            <input type="text" id="node-input-config" style="width:70%" placeholder="Event config">
+    </div>
+    <div class="form-row">
+        <label for="node-input-trigger"><i class="fa fa-microchip"></i> Item</label>
+        <select id="node-input-trigger" style="width:30%"></select>
+        <select id="node-input-operator" style="width:10%"></select>
+        <input type="text" id="node-input-compareValue" style="width:30%">
+        <input type="hidden" id="node-input-compareType">
+    </div>
+    <div class="form-row">
+        <label for="node-input-outputValue"><i class="fa fa-sign-out"></i> Output</label>
+        <input type="text" id="node-input-outputValue" style="width:70%"">
+        <input type="hidden" id="node-input-outputType">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="event">
+    <p>The Event node is used to initiate a flow when certain <i>Item</i> conditions are met.</p>
+    <li><strong>Config</strong>: Used for firing events between nodes. Use the same config for all nodes that should be able to communicate.</li>
+    <li><strong>Item</strong>: Select which <i>Item</i> and what conditions are to be met for the event to trigger.</li>
+    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. <code>msg.name</code>, <code>msg.topic</code> and/or <code>msg.id</code> is always added to the outgoing <code>msg</code> if configured in the <i>Item</i> node.</li>
+    <li><strong>Name</strong>: Node name.</li>    
+</script>

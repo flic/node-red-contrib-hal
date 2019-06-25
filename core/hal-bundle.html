@@ -1,0 +1,143 @@
+<script type="text/javascript">
+    RED.nodes.registerType('bundle',{
+        category: 'Home Automation',
+        color: '#EBA8FF',
+        defaults: {
+            name: {
+                value:""
+            },
+            bundleset: {},
+            outputValue: {
+                value: "",
+                required: false
+            },
+            outputType: {
+                required: true
+            }
+        },
+        inputs:1,
+        outputs:1,
+        icon: "hal-bundle.png",
+        label: function() {
+            return this.name||"bundle";
+        },
+        oneditprepare: function () {
+            //get all item nodes
+            var itemsList = [];
+            RED.nodes.eachNode(function (cf) {
+                if (cf.type === "item") {
+                    itemsList.push(cf);
+                }
+            });
+            //No item nodes have been created
+            if(itemsList.length===0){
+                $("<li>No items found</li>").appendTo("#node-input-bundle-container");
+                $("#node-input-add-bundle").hide();
+                return;
+            }
+            var createBundle = function(i,bundle){
+                $("<li/>",{id:"node-input-bundle-line"+i}).appendTo("#node-input-bundle-container");
+                $("<div/>",{id:"node-input-bundle-div"+i}).appendTo("#node-input-bundle-line"+i);
+                $("<select/>",{class:"node-input-bundle-item",id:"node-input-bundle-item"+i,style:"width:70%"}).appendTo("#node-input-bundle-div"+i);
+                for (var d in itemsList) {
+                    $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-bundle-item"+i);
+                }
+                            
+                if (bundle) {
+                    $("#node-input-bundle-item"+i).val(bundle);
+                    $("#node-input-bundle-item"+i).trigger('change');
+                }
+
+                //Add delete button
+                $('<a/>',{href:"#",class:"btn btn-mini",id:"node-input-bundle-delete"+i, style:"margin-left: 5px;"}).appendTo("#node-input-bundle-div"+i);
+                $('<i/>',{class:"fa fa-remove"}).appendTo("#node-input-bundle-delete"+i);
+                
+                //Delete
+                $("#node-input-bundle-delete"+i).click(function() {
+                    $("#node-input-bundle-line"+i).css({"background":"#fee"});
+                    $("#node-input-bundle-line"+i).fadeOut(300, function() {
+                        $(this).remove();
+                        $("#node-input-bundle-container").children().each(function(i) {
+                            $(this).find(".node-input-bundle-index").html(i+1);
+                        });
+                    });
+                });
+
+                            //Add output
+                var stateType = {
+                    value: "state",
+                    label: "item state",
+                    hasValue: false
+                };
+                $('#node-input-outputValue').typedInput({
+                    default: 'msg',
+                    typeField: $("#node-input-outputType"),
+                    types: ['msg',stateType,'flow','global','str','num','bool','json']
+                });
+                if (this.outputType) {
+                    $("#node-input-outputValue").typedInput('type',this.outputType);
+                }
+                if (this.outputValue) {
+                    if (this.outputType == 'json') {
+                        this.outputValue = JSON.stringify(this.outputValue);
+                    }
+                    $("#node-input-outputValue").typedInput('value',this.outputValue);
+                } else {
+                    $("#node-input-outputValue").typedInput('value','payload');
+                }
+            }
+
+            $("#node-input-add-bundle").click(function() {
+                createBundle($("#node-input-bundle-container").children().length+1,{item:"",operator:"",value:"",type:""});
+                $("#node-input-bundle-container-div").scrollTop($("#node-input-bundle-container-div").get(0).scrollHeight);
+            });
+
+            //Generate all saved bundles
+            if (this.bundleset) {
+                for (var i=0;i<this.bundleset.length;i++) {
+                    var bundle = this.bundleset[i];
+                    createBundle(i+1,bundle);
+                }
+            } else {
+                createBundle(1,null);
+            }
+        },
+        oneditsave: function() {
+            var bundlecontainer = $("#node-input-bundle-container").children();
+            var node = this;
+            node.bundleset= [];
+
+            bundlecontainer.each(function(i) {
+                var bundle = $(this);
+                var item = bundle.find(".node-input-bundle-item option:selected").val();
+                node.bundleset.push(item);
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="bundle">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
+    </div>
+    <div class="form-row">
+        <label for="node-input-outputValue"><i class="fa fa-sign-out"></i> Output</label>
+        <input type="text" id="node-input-outputValue" style="width:70%"">
+        <input type="hidden" id="node-input-outputType">
+    </div>
+    <div class="form-row node-input-bundle-container-row" style="margin-bottom: 0px;">
+        <div id="node-input-bundle-container-div" style="box-sizing: border-box; border-radius: 5px; height: 310px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+            <ol id="node-input-bundle-container" style=" list-style-type:none; margin: 0; "></ol>
+        </div>
+    </div>
+    <div class="form-row">
+        <a href="#" class="btn btn-mini" id="node-input-add-bundle" style="margin-top: 4px;"><i class="fa fa-plus"></i> item</a>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="bundle">
+    <p>The Bundle node allows you to group multiple <i>Items</i> together and send their values on, one after another, when triggered.</p>
+    <li><strong>Name</strong>: Node name.</li> 
+    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. <code>msg.name</code>, <code>msg.topic</code> and/or <code>msg.id</code> is always added to the outgoing <code>msg</code> if configured in the <i>Item</i> node.</li>
+</script>

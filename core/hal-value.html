@@ -1,0 +1,93 @@
+<script type="text/javascript">
+    RED.nodes.registerType('value',{
+        category: 'Home Automation',
+        color: '#EBA8FF',
+        defaults: {
+            name: {
+                value:""
+            },
+            item: {
+                value: "",
+                required: true
+            },
+            outputValue: {
+                value: "payload",
+                required: false
+            },
+            outputType: {
+                required: true
+            }
+        },
+        inputs:1,
+        outputs:1,
+        icon: "hal-value.png",
+        label: function() {
+            return this.name||"value";
+        },
+        oneditprepare: function () {
+            //get all item nodes
+            var itemsList = [];
+            RED.nodes.eachNode(function (cf) {
+                if (cf.type === "item") {
+                    itemsList.push(cf);
+                }
+            });
+
+            //Add items
+            for (var d in itemsList) {
+                $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-item");
+            }
+            if (this.item) {
+                $("#node-input-item").val(this.item);
+                $('#node-input-item').trigger('change');
+            }
+
+            //Add output
+            var fullType = {
+                value: "full",
+                label: "complete msg object",
+                hasValue: false
+            };
+            var stateType = {
+                value: "state",
+                label: "item state",
+                hasValue: false
+            };
+            $('#node-input-outputValue').typedInput({
+                default: 'state',
+                typeField: $("#node-input-outputType"),
+                types: [stateType,'msg',fullType]
+            });
+            if (this.outputType) {
+                $("#node-input-outputValue").typedInput('type',this.outputType);
+            }
+            if (this.outputValue) {
+                $("#node-input-outputValue").typedInput('value',this.outputValue);
+            }
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="value">
+
+    <div class="form-row">
+        <label for="node-input-item"><i class="fa fa-microchip"></i> Item</label>
+        <select id="node-input-item" style="width:70%"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-outputValue"><i class="fa fa-sign-out"></i> Output</label>
+        <input type="text" id="node-input-outputValue" placeholder="payload" style="width:70%">
+        <input type="hidden" id="node-input-outputType">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="value">
+    <p>The Value node queries a specific <i>Item</i> and sends the <i>Item</i> value on to the next node.</p>
+    <li><strong>Item</strong>: Select the <i>Item</i>.</li>
+    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. <code>msg.name</code>, <code>msg.topic</code> and/or <code>msg.id</code> is always added to the outgoing <code>msg</code> if configured in the <i>Item</i> node.</li>
+    <li><strong>Name</strong>: Node name.</li>  
+</script>

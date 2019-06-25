@@ -1,0 +1,180 @@
+<script type="text/javascript">
+    RED.nodes.registerType('gate',{
+        category: 'Home Automation',
+        color: '#EBA8FF',
+        defaults: {
+            config: {
+                value: "",
+                type: "event-config",
+                required: true
+            },
+            name: {
+                value:""
+            },
+            rules: {},
+            checkall: {
+                value:"true",
+                required:true
+            }
+        },
+        inputs:1,
+        outputs:2,
+        outputLabels: ["open","closed"],
+        icon: "hal-gate.png",
+        label: function() {
+            return this.name||"gate";
+        },
+        oneditprepare: function () {
+            var operators = [
+                { v: "eq", t: "==" },
+                { v: "neq", t: "!=" },
+                { v: "lt", t: "<" },
+                { v: "lte", t: "<=" },
+                { v: "gt", t: ">" },
+                { v: "gte", t: ">=" },
+                { v: "cont", t: "contains" },
+                { v: "regex", t: "matches regex" },
+                { v: "true", t: "is true" },
+                { v: "false", t: "is false" },
+                { v: "null", t: "is null" },
+                { v: "nnull", t: "is not null" }
+            ];
+            //get all item nodes
+            var itemsList = [];
+            RED.nodes.eachNode(function (cf) {
+                if (cf.type === "item") {
+                    itemsList.push(cf);
+                }
+            });
+            //No item nodes have been created
+            if(itemsList.length===0){
+                $("<li>No items found</li>").appendTo("#node-input-rule-container");
+                $("#node-input-add-rule").hide();
+                return;
+            }
+            var createRule = function(i,rule){
+                $("<li/>",{id:"node-input-rule-line"+i}).appendTo("#node-input-rule-container");
+                $("<div/>",{id:"node-input-rule-div"+i}).appendTo("#node-input-rule-line"+i);
+                $("<select/>",{class:"node-input-rule-item",id:"node-input-rule-item"+i,style:"width:30%"}).appendTo("#node-input-rule-div"+i);
+                for (var d in itemsList) {
+                    $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-rule-item"+i);
+                }
+
+                $("<select/>",{class:"node-input-rule-operator",id:"node-input-rule-operator"+i,style:"width:10%"}).appendTo("#node-input-rule-div"+i);
+                for (var d in operators) {
+                    $("<option value='" + operators[d].v + "'> " + operators[d].t + "</option>").appendTo("#node-input-rule-operator"+i);
+                }
+                            
+                //Add comparison value
+                $('<input/>',{class:"node-input-rule-value",id:"node-input-rule-value"+i,type:"text",style:"width:30%"}).appendTo("#node-input-rule-div"+i).typedInput({
+                    default:'num',
+                    types:['msg','flow','global','str','num','env']
+                });
+                if (rule) {
+                    $("#node-input-rule-item"+i).val(rule.item);
+                    $("#node-input-rule-item"+i).trigger('change');
+                    $("#node-input-rule-operator"+i).val(rule.operator);
+                    $("#node-input-rule-operator"+i).trigger('change');
+                    $("#node-input-rule-value"+i).typedInput('value',rule.value).typedInput('type',rule.type);;
+                }
+
+                //Add delete button
+                $('<a/>',{href:"#",class:"btn btn-mini",id:"node-input-rule-delete"+i, style:"margin-left: 5px;"}).appendTo("#node-input-rule-div"+i);
+                $('<i/>',{class:"fa fa-remove"}).appendTo("#node-input-rule-delete"+i);
+                
+                //Delete
+                $("#node-input-rule-delete"+i).click(function() {
+                    $("#node-input-rule-line"+i).css({"background":"#fee"});
+                    $("#node-input-rule-line"+i).fadeOut(300, function() {
+                        $(this).remove();
+                        $("#node-input-rule-container").children().each(function(i) {
+                            $(this).find(".node-input-rule-index").html(i+1);
+                        });
+                    });
+                });
+
+                //Show/Hide value field
+                $("#node-input-rule-operator"+i).change( function() {
+                    var type = $("#node-input-rule-operator"+i).children("option:selected").val();
+                    if (type.length < 4) {
+                            $("#node-input-rule-operator"+i).css({ "width": "60px" });
+                        } else if (type === "regex") {
+                            $("#node-input-rule-operator"+i).css({ "width": "137px" });
+                        } else {
+                            $("#node-input-rule-operator"+i).css({ "width": "120px" });
+                        }
+                    if (type === "true" || type === "false" || type === "null" || type === "nnull") {
+                        $("#node-input-rule-value"+i).typedInput('hide');
+                    } else {
+                        $("#node-input-rule-value"+i).typedInput('show');
+                    }
+                });
+            }
+
+            $("#node-input-add-rule").click(function() {
+                createRule($("#node-input-rule-container").children().length+1,{item:"",operator:"",value:"",type:""});
+                $("#node-input-rule-container-div").scrollTop($("#node-input-rule-container-div").get(0).scrollHeight);
+            });
+
+            //Generate all saved rules
+            if (this.rules) {
+                for (var i=0;i<this.rules.length;i++) {
+                    var rule = this.rules[i];
+                    createRule(i+1,rule);
+                }
+            } else {
+                createRule(1,null);
+            }
+        },
+        oneditsave: function() {
+            var rules = $("#node-input-rule-container").children();
+            var ruleset;
+            var node = this;
+            node.rules= [];
+
+            rules.each(function(i) {
+                var rule = $(this);
+                var item = rule.find(".node-input-rule-item option:selected").val();
+                var operator = rule.find(".node-input-rule-operator option:selected").val();
+                var value = rule.find(".node-input-rule-value").typedInput('value');
+                var type  = rule.find(".node-input-rule-value").typedInput('type');
+
+                var r = {item:item, operator:operator, value:value, type:type};
+                node.rules.push(r);
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="gate">
+    <div class="form-row">
+        <label for="node-input-config"><i class="fa fa-bookmark"></i> Config</label>
+        <input type="text" id="node-input-config" style="width:70%" placeholder="Event config">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
+    </div>
+    <div class="form-row node-input-rule-container-row" style="margin-bottom: 0px;">
+        <div id="node-input-rule-container-div" style="box-sizing: border-box; border-radius: 5px; height: 310px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+            <ol id="node-input-rule-container" style=" list-style-type:none; margin: 0; "></ol>
+        </div>
+    </div>
+    <div class="form-row">
+        <a href="#" class="btn btn-mini" id="node-input-add-rule" style="margin-top: 4px;"><i class="fa fa-plus"></i> rule</a>
+    </div>
+    <div class="form-row">
+        <select id="node-input-checkall" style="width:100%; margin-right:5px;">
+            <option value="true">all rules must be true</option>
+            <option value="false">minimum one rule must be true</option>
+        </select>
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="gate">
+    <p>The Gate node is used to redirect the flow depending on if certain <i>Item</i> conditions are met.</p>
+    <li><strong>Config</strong>: Used for firing events between nodes. Use the same config for all nodes that should be able to communicate.</li>
+    <li><strong>Name</strong>: Node name.</li> 
+    <li><strong>Rules</strong>: Add one or more conditions to be met. Select if all rules or just one rule needs to be true.</li>
+</script>

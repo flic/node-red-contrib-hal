@@ -1,0 +1,24 @@
+
+    <script type="text/javascript">
+        RED.nodes.registerType('event-config', {
+            category: 'config',
+            defaults: {
+                name:  {value: "HAL Event config"}
+            },
+            label: function () {
+                return this.name || "HAL Event config";
+            }
+        });
+    </script>
+
+
+<script type="text/x-red" data-template-name="event-config">
+    <div class="form-row" style="width:500px">
+        <p>The configuration is used for firing events between nodes. Use the same config for all nodes that should be able to communicate.</p>
+        <p >If you have nodes on different tabs, make sure to select <b>on all flows</b>.</p>
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+</script>
