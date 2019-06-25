@@ -30,8 +30,9 @@ module.exports = function(RED) {
 
             // Show value on node
             var state = eval('msg.'+node.stateProperty);
-            node.oldState = node.state ? node.oldState : "";
+            node.oldState = node.state ? node.state : "";
             node.state = state;
+            
             utils.showState(node,state);
             
             node.events.event(node.id,node);
