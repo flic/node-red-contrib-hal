@@ -70,6 +70,24 @@
                     default:'num',
                     types:['msg','flow','global','str','num','env']
                 });
+                
+                //Show/Hide value field
+                $("#node-input-rule-operator"+i).change( function() {
+                    var type = $("#node-input-rule-operator"+i).children("option:selected").val();
+                    if (type.length < 4) {
+                            $("#node-input-rule-operator"+i).css({ "width": "60px" });
+                        } else if (type === "regex") {
+                            $("#node-input-rule-operator"+i).css({ "width": "137px" });
+                        } else {
+                            $("#node-input-rule-operator"+i).css({ "width": "120px" });
+                        }
+                    if (type === "true" || type === "false" || type === "null" || type === "nnull") {
+                        $("#node-input-rule-value"+i).typedInput('hide');
+                    } else {
+                        $("#node-input-rule-value"+i).typedInput('show');
+                    }
+                });
+
                 if (rule) {
                     $("#node-input-rule-item"+i).val(rule.item);
                     $("#node-input-rule-item"+i).trigger('change');
@@ -91,23 +109,6 @@
                             $(this).find(".node-input-rule-index").html(i+1);
                         });
                     });
-                });
-
-                //Show/Hide value field
-                $("#node-input-rule-operator"+i).change( function() {
-                    var type = $("#node-input-rule-operator"+i).children("option:selected").val();
-                    if (type.length < 4) {
-                            $("#node-input-rule-operator"+i).css({ "width": "60px" });
-                        } else if (type === "regex") {
-                            $("#node-input-rule-operator"+i).css({ "width": "137px" });
-                        } else {
-                            $("#node-input-rule-operator"+i).css({ "width": "120px" });
-                        }
-                    if (type === "true" || type === "false" || type === "null" || type === "nnull") {
-                        $("#node-input-rule-value"+i).typedInput('hide');
-                    } else {
-                        $("#node-input-rule-value"+i).typedInput('show');
-                    }
                 });
             }
 
