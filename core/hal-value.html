@@ -25,12 +25,17 @@
             return this.name||"value";
         },
         oneditprepare: function () {
-            //get all item nodes
+            //get all item nodes and sort them alphabetically
             var itemsList = [];
             RED.nodes.eachNode(function (cf) {
                 if (cf.type === "item") {
                     itemsList.push(cf);
                 }
+            });
+            itemsList.sort(function(a, b) {
+                var textA = a.name.toUpperCase();
+                var textB = b.name.toUpperCase();
+                return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
             });
 
             //Add items

@@ -39,13 +39,19 @@
                 { v: "null", t: "is null" },
                 { v: "nnull", t: "is not null" }
             ];
-            //get all item nodes
+            //get all item nodes and sort them alphabetically
             var itemsList = [];
             RED.nodes.eachNode(function (cf) {
                 if (cf.type === "item") {
                     itemsList.push(cf);
                 }
             });
+            itemsList.sort(function(a, b) {
+                var textA = a.name.toUpperCase();
+                var textB = b.name.toUpperCase();
+                return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+            });
+            
             //No item nodes have been created
             if(itemsList.length===0){
                 $("<li>No items found</li>").appendTo("#node-input-rule-container");
