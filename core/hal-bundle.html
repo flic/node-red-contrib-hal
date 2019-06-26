@@ -34,6 +34,7 @@
                 $("#node-input-add-bundle").hide();
                 return;
             }
+
             var createBundle = function(i,bundle){
                 $("<li/>",{id:"node-input-bundle-line"+i}).appendTo("#node-input-bundle-container");
                 $("<div/>",{id:"node-input-bundle-div"+i}).appendTo("#node-input-bundle-line"+i);
@@ -56,7 +57,7 @@
                     hasValue: false
                 };
                 
-                $('<input/>',{class:"node-input-bundle-value",id:"node-input-bundle-value"+i,type:"text",style:"width:46%"}).appendTo("#node-input-bundle-div"+i).typedInput({
+                $('<input/>',{class:"node-input-bundle-value",id:"node-input-bundle-value"+i,type:"text",style:"width:46%;margin-left: 5px;"}).appendTo("#node-input-bundle-div"+i).typedInput({
                     default: 'state',
                     types: [stateType,'msg',fullType,'flow','global','str','num','bool','json']
                 });
@@ -125,6 +126,11 @@
         <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
     </div>
     <div class="form-row node-input-bundle-container-row" style="margin-bottom: 0px;">
+        <table style="margin: 0;border: 0px; width: 92%;">
+            <tr style="text-align: center;">
+                <td><i class="fa fa-microchip"></i> Item</td><td><i class="fa fa-sign-out"></i> Output</td>
+            </tr>
+        </table>
         <div id="node-input-bundle-container-div" style="box-sizing: border-box; border-radius: 5px; height: 310px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
             <ol id="node-input-bundle-container" style=" list-style-type:none; margin: 0; "></ol>
         </div>
