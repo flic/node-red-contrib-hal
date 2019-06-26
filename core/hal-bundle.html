@@ -6,14 +6,7 @@
             name: {
                 value:""
             },
-            bundleset: {},
-            outputValue: {
-                value: "",
-                required: false
-            },
-            outputType: {
-                required: true
-            }
+            bundleset: {}
         },
         inputs:1,
         outputs:1,
@@ -38,14 +31,37 @@
             var createBundle = function(i,bundle){
                 $("<li/>",{id:"node-input-bundle-line"+i}).appendTo("#node-input-bundle-container");
                 $("<div/>",{id:"node-input-bundle-div"+i}).appendTo("#node-input-bundle-line"+i);
-                $("<select/>",{class:"node-input-bundle-item",id:"node-input-bundle-item"+i,style:"width:70%"}).appendTo("#node-input-bundle-div"+i);
+
+                //Add item
+                $("<select/>",{class:"node-input-bundle-item",id:"node-input-bundle-item"+i,style:"width:46%"}).appendTo("#node-input-bundle-div"+i);
                 for (var d in itemsList) {
                     $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-bundle-item"+i);
                 }
                             
+                //Add output
+                var fullType = {
+                    value: "full",
+                    label: "complete msg object",
+                    hasValue: false
+                };
+                var stateType = {
+                    value: "state",
+                    label: "item state",
+                    hasValue: false
+                };
+                
+                $('<input/>',{class:"node-input-bundle-value",id:"node-input-bundle-value"+i,type:"text",style:"width:46%"}).appendTo("#node-input-bundle-div"+i).typedInput({
+                    default: 'state',
+                    types: [stateType,'msg',fullType,'flow','global','str','num','bool','json']
+                });
+
                 if (bundle) {
-                    $("#node-input-bundle-item"+i).val(bundle);
+                    if (typeof bundle.value == 'object') {
+                        bundle.value = JSON.stringify(bundle.value);
+                    }
+                    $("#node-input-bundle-item"+i).val(bundle.item);
                     $("#node-input-bundle-item"+i).trigger('change');
+                    $("#node-input-bundle-value"+i).typedInput('type',bundle.type).typedInput('value',bundle.value);
                 }
 
                 //Add delete button
@@ -62,29 +78,6 @@
                         });
                     });
                 });
-
-                            //Add output
-                var stateType = {
-                    value: "state",
-                    label: "item state",
-                    hasValue: false
-                };
-                $('#node-input-outputValue').typedInput({
-                    default: 'msg',
-                    typeField: $("#node-input-outputType"),
-                    types: ['msg',stateType,'flow','global','str','num','bool','json']
-                });
-                if (this.outputType) {
-                    $("#node-input-outputValue").typedInput('type',this.outputType);
-                }
-                if (this.outputValue) {
-                    if (this.outputType == 'json') {
-                        this.outputValue = JSON.stringify(this.outputValue);
-                    }
-                    $("#node-input-outputValue").typedInput('value',this.outputValue);
-                } else {
-                    $("#node-input-outputValue").typedInput('value','payload');
-                }
             }
 
             $("#node-input-add-bundle").click(function() {
@@ -110,7 +103,11 @@
             bundlecontainer.each(function(i) {
                 var bundle = $(this);
                 var item = bundle.find(".node-input-bundle-item option:selected").val();
-                node.bundleset.push(item);
+                var value = bundle.find(".node-input-bundle-value").typedInput('value');
+                var type  = bundle.find(".node-input-bundle-value").typedInput('type');
+
+                var b = {item:item, value:value, type:type};
+                node.bundleset.push(b);
             });
         }
     });
@@ -120,11 +117,6 @@
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
-    </div>
-    <div class="form-row">
-        <label for="node-input-outputValue"><i class="fa fa-sign-out"></i> Output</label>
-        <input type="text" id="node-input-outputValue" style="width:70%"">
-        <input type="hidden" id="node-input-outputType">
     </div>
     <div class="form-row node-input-bundle-container-row" style="margin-bottom: 0px;">
         <div id="node-input-bundle-container-div" style="box-sizing: border-box; border-radius: 5px; height: 310px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
