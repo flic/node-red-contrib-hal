@@ -17,7 +17,11 @@ module.exports = function(RED) {
                 msg.id = item.identifier ? item.identifier : msg.id;
                 msg.name = item.name;
 
-                msg = utils.generateMsg[bundle.type](msg,bundle.value,item);
+                if (bundle.type == 'state') {
+                    msg = utils.generateMsg[bundle.type](msg,null,item)
+                } else {                
+                    msg = utils.generateMsg[bundle.type](msg,bundle.value,msg);
+                }
                 node.send(msg);
             }
         });
