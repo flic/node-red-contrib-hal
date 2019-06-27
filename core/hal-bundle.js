@@ -12,17 +12,12 @@ module.exports = function(RED) {
             for (var i = 0; i < this.bundleset.length; i += 1) {
                 var bundle = node.bundleset[i];
                 var item = RED.nodes.getNode(bundle.item);
-
-                msg.topic = item.topic ? item.topic : msg.topic;
-                msg.id = item.identifier ? item.identifier : msg.id;
-                msg.name = item.name;
-
-                if (bundle.type == 'state') {
-                    msg = utils.generateMsg[bundle.type](msg,null,item)
-                } else {                
-                    msg = utils.generateMsg[bundle.type](msg,bundle.value,msg);
-                }
-                node.send(msg);
+                var msgOut = Object.assign({}, msg);
+                msgOut.topic = item.topic ? item.topic : msg.topic;
+                msgOut.id = item.identifier ? item.identifier : msg.id;
+                msgOut.name = item.name;
+                msgOut.payload = utils.generatePayload[bundle.type](msg,bundle.value,item.state);
+                node.send(msgOut);
             }
         });
     }

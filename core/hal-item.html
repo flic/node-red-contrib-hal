@@ -61,11 +61,6 @@
             });
 
             //Add output
-            var fullType = {
-                value: "full",
-                label: "complete msg object",
-                hasValue: false
-            };
             var stateType = {
                 value: "state",
                 label: "item state",
@@ -74,7 +69,7 @@
             $('#node-input-outputValue').typedInput({
                 default: 'state',
                 typeField: $("#node-input-outputType"),
-                types: [stateType,fullType,'msg']
+                types: [stateType,'msg']
             });
             if (this.outputType) {
                 $("#node-input-outputValue").typedInput('type',this.outputType);

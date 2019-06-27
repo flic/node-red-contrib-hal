@@ -1,4 +1,6 @@
 module.exports = function(RED) {
+    var utils = require("../lib/utils");
+
     function halValue(config) {
         RED.nodes.createNode(this,config);
         this.item = config.item;
@@ -14,18 +16,12 @@ module.exports = function(RED) {
                 return;
             }
 
-            switch (node.outputType) {
-                case 'full':
-                    var msgid = msg._msgid;
-                    msg = item.msg;
-                    msg._msgid = msgid;
-                    break;
-                case 'state':
-                    msg.payload = item.state;
-                    break;
-                default:
-                    msg.payload = eval('item.msg.'+node.outputValue);
-                    break;
+            if (node.outputType == 'full') {
+                var msgid = msg._msgid;
+                msg = item.msg;
+                msg._msgid = msgid;
+            } else {
+                msg.payload =  utils.generatePayload[node.outputType](msg,node.outputValue,item.state);
             }
 
             node.send(msg);

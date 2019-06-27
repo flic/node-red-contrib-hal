@@ -18,8 +18,7 @@ module.exports = function(RED) {
 
         node.listener = function(event) {
             if (utils.compare[node.operator](event.state,node.compareValue,event.oldState)){
-                var msg = (node.outputType == 'full') ? event.msg : {payload: ""};
-                msg = utils.generateMsg[node.outputType](msg,node.outputValue,event);
+                var msg = (node.outputType == 'full') ? Object.assign({},event.msg) : {payload: utils.generatePayload[node.outputType](event.msg,node.outputValue,event.state)};
                 msg._msgid = RED.util.generateId();
                 node.send(msg);
             }

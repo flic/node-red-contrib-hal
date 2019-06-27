@@ -29,26 +29,15 @@ module.exports = function(RED) {
             node.msg = msg;
 
             // Show value on node
-            var state = eval('msg.'+node.stateProperty);
             node.oldState = node.state ? node.state : "";
-            node.state = state;
+            node.state = eval('msg.'+node.stateProperty);
             
-            utils.showState(node,state);
+            utils.showState(node,node.state);
             
             node.events.event(node.id,node);
 
             if (node.output === true) {
-                switch (node.outputType) {
-                    case 'full':
-                        break;
-                    case 'state':
-                        msg.payload = node.state;
-                        break;
-                    case 'msg':
-                        msg.payload = eval('msg.'+node.outputValue);
-                        break;
-                }
-
+                msg.payload = utils.generatePayload[node.outputType](msg,node.outputValue,node.state);
                 node.send(msg);
             }
 
