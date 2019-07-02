@@ -11,17 +11,19 @@ module.exports = function(RED) {
         node.on('input', function(msg) {
             var item = RED.nodes.getNode(node.item);
 
-            if (!item.hasOwnProperty('msg')) {
+            if (!item.hasOwnProperty('payload')) {
                 // No value stored in item
                 return;
             }
 
-            if (node.outputType == 'full') {
-                var msgid = msg._msgid;
-                msg = item.msg;
-                msg._msgid = msgid;
+            msg.topic = item.topic ? item.topic : msg.topic;
+            msg.id = item.identifier ? item.identifier : msg.id;
+            msg.name = item.name;
+
+            if (node.outputType == 'state') {
+                msg.payload = item.state;
             } else {
-                msg.payload =  utils.generatePayload[node.outputType](msg,node.outputValue,item.state);
+                msg.payload =  RED.util.evaluateNodeProperty(node.outputValue,'msg',node,item);
             }
 
             node.send(msg);

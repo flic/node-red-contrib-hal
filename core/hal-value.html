@@ -48,20 +48,20 @@
             }
 
             //Add output
-            var fullType = {
-                value: "full",
-                label: "complete msg object",
-                hasValue: false
-            };
             var stateType = {
                 value: "state",
                 label: "item state",
                 hasValue: false
             };
+            var itemType = {
+                value: "item",
+                label: "item msg.",
+                hasValue: true
+            };
             $('#node-input-outputValue').typedInput({
                 default: 'state',
                 typeField: $("#node-input-outputType"),
-                types: [stateType,'msg',fullType]
+                types: [stateType,itemType]
             });
             if (this.outputType) {
                 $("#node-input-outputValue").typedInput('type',this.outputType);
@@ -88,6 +88,7 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
     </div>
+    <div class="form-tips"><b>Tip:</b> The output value is in the context of the referred <i>item</> node. <code>item msg.payload</code> refers to the original <i>msg.payload</i> from the <i>item</i>.</div>
 </script>
 
 <script type="text/x-red" data-help-name="value">

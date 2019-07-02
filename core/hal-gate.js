@@ -9,7 +9,7 @@ module.exports = function(RED) {
 
             rule.value = utils.convertTo[rule.type](rule.value);
 
-            if (item.hasOwnProperty('msg')) {
+            if (item.hasOwnProperty('payload')) {
                 if (utils.compare[rule.operator](item.state,rule.value,item.oldState)){
                     ruleMatch ++;
                 }

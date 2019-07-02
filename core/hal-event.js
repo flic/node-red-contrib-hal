@@ -18,8 +18,16 @@ module.exports = function(RED) {
 
         node.listener = function(event) {
             if (utils.compare[node.operator](event.state,node.compareValue,event.oldState)){
-                var msg = (node.outputType == 'full') ? Object.assign({},event.msg) : {payload: utils.generatePayload[node.outputType](event.msg,node.outputValue,event.state)};
+                var msg = {};
                 msg._msgid = RED.util.generateId();
+                msg.topic = event.topic ? event.topic : undefined;
+                msg.id = event.identifier ? event.identifier : undefined;
+                msg.name = event.name;
+                if (node.outputType == 'state') {
+                    msg.payload = event.state;
+                } else {
+                    msg.payload  = RED.util.evaluateNodeProperty(node.outputValue,node.outputType,node,event);
+                }
                 node.send(msg);
             }
         }

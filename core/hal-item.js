@@ -29,6 +29,7 @@ module.exports = function(RED) {
 
         node.on('input', function(msg) {
             if (msg == null) {
+                // Bootstrap
                 if (node.output === true) {
                     var msg = {};
                     msg.payload = RED.util.evaluateNodeProperty(node.bootstrapValue,node.bootstrapType,node);
@@ -47,19 +48,23 @@ module.exports = function(RED) {
             msg.topic = node.topic ? node.topic : msg.topic;
             msg.id = node.identifier ? node.identifier : msg.id;
 
-            // Store msg
-            node.msg = msg;
+            // Store msg.payload
+            node.payload = msg.payload;
 
             // Show value on node
             node.oldState = node.state ? node.state : "";
-            node.state = eval('msg.'+node.stateProperty);
-            
+            node.state = RED.util.evaluateNodeProperty(node.stateProperty,'msg',node,msg);
+                        
             utils.showState(node,node.state);
             
             node.events.event(node.id,node);
 
             if (node.output === true) {
-                msg.payload = utils.generatePayload[node.outputType](msg,node.outputValue,node.state);
+                if (node.outputType == 'state') {
+                    msg.payload = node.state;
+                } else {
+                    msg.payload = RED.util.evaluateNodeProperty(node.outputValue,node.outputType,node,msg);
+                }
                 node.send(msg);
             }
         });
