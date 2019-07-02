@@ -24,7 +24,7 @@ module.exports = function(RED) {
         if (node.bootstrap === true) {
             setTimeout(function() {
                 node.emit("input",null);
-            },100);
+            },0);
         }
 
         node.on('input', function(msg) {

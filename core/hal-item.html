@@ -165,10 +165,10 @@
     <div class="form-row" id="bootstrap">
         <label>&nbsp;</label>
         <input type="checkbox" id="node-input-bootstrap" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-output" style="width: 70%;">&nbsp;&nbsp;<i class="fa fa-sign-out"></i> Send bootstrap msg</label>
+        <label for="node-input-output" style="width: 70%;">&nbsp;&nbsp;<i class="fa fa-bolt"></i> Send bootstrap msg</label>
     </div>
     <div class="form-row" id="bootstrapValue">
-        <label for="node-input-bootstrapValue"><i class="fa fa-sign-out"></i> Bootstrap</label>
+        <label for="node-input-bootstrapValue"><i class="fa fa-code"></i> Bootstrap</label>
         <input type="text" id="node-input-bootstrapValue" style="width:70%">
         <input type="hidden" id="node-input-bootstrapType">
     </div>
@@ -185,7 +185,7 @@
     <li><strong>Identity</strong>: An optional property that can be configured in the node or, if left blank, can be set by <code>msg.id</code>. If set, the prorerty is added to the output message as <code>msg.id</code> and can for example be used to identify a specific item when using the <i>Bundle</i> node.</li>
     <li><strong>State</strong>: Select which property from the incoming <code>msg</code> to be used as the <i>Item state</i> value, usually <code>msg.payload</code>. The <i>Item</i> node always saves the whole <code>msg</code> object, and another property can be used as output from a Value node if so desired.</li>
     <li><strong>Use output</strong> can be selected to send the incoming value further to another node. The <i>state</i> value is sent on by default, but any property in the <code>msg</code> object can be selected.</li>
-    <li>If outpout is used <strong>Send msg on startup</strong> can be selected to send an initial msg further to another node at startup.</li>
+    <li><strong>Send bootstrap msg</strong> can be selected to send an initial bootstrap msg at startup.</li>
 
     <li><strong>Name</strong>: Node name, used to select the Item in <i>Value</i>, <i>Gate</i>, <i>Bundle</i> and <i>Event</i> nodes.</li>    
 </script>

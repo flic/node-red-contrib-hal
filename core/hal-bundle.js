@@ -16,7 +16,7 @@ module.exports = function(RED) {
                 msgOut.topic = item.topic ? item.topic : msg.topic;
                 msgOut.id = item.identifier ? item.identifier : msg.id;
                 msgOut.name = item.name;
-                msgOut.payload = utils.generatePayload[bundle.type](msg,bundle.value,item.state);
+                msgOut.payload = RED.util.evaluateNodeProperty(bundle.value,bundle.type,node,msg);
                 node.send(msgOut);
             }
         });
