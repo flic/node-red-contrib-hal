@@ -33,6 +33,12 @@
             outputType: {
                 required: true
             },
+            bootstrap: {
+                value: false,
+                required: true
+            },
+            bootstrapValue: {},
+            bootstrapType: {},
             stateProperty: {
                 required: true
             },
@@ -77,13 +83,37 @@
             if (this.outputValue) {
                 $("#node-input-outputValue").typedInput('value',this.outputValue);
             } 
+            //Add bootstrap
+            $('#node-input-bootstrapValue').typedInput({
+                default: 'json',
+                typeField: $("#node-input-bootstrapType"),
+                types: ['json','flow','global','str','num','bool']
+            });
+            if (this.bootstrapType) {
+                $("#node-input-bootstrapValue").typedInput('type',this.bootstrapType);
+            }
+            if (this.bootstrapValue) {
+                $("#node-input-bootstrapValue").typedInput('value',this.bootstrapValue);
+            } 
 
             //Show/Hide output field
             $("#node-input-output").change( function() {
                 if ($("#node-input-output").is(":checked")) {
                     $("#outputValue").show();
+                    $("#bootstrap").show();
                 } else {
                     $("#outputValue").hide();
+                    $("#node-input-bootstrap").prop('checked', false);
+                    $("#bootstrap").hide();
+                    $("#bootstrapValue").hide();
+                }
+            });
+            //Show/Hide bootstrap field
+            $("#node-input-bootstrap").change( function() {
+                if ($("#node-input-bootstrap").is(":checked")) {
+                    $("#bootstrapValue").show();
+                } else {
+                    $("#bootstrapValue").hide();
                 }
             });
         },
@@ -122,15 +152,25 @@
         <input type="text" id="node-input-stateProperty" placeholder="payload" style="width:70%>
         <input type="hidden" id="node-input-propertyType">
     </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-output" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-output" style="width: 70%;">&nbsp;&nbsp;<i class="fa fa-sign-out"></i> Use output</label>
+    </div>
     <div class="form-row" id="outputValue">
         <label for="node-input-outputValue"><i class="fa fa-sign-out"></i> Output</label>
         <input type="text" id="node-input-outputValue" placeholder="payload" style="width:70%">
         <input type="hidden" id="node-input-outputType">
     </div>
-    <div class="form-row">
+    <div class="form-row" id="bootstrap">
         <label>&nbsp;</label>
-        <input type="checkbox" id="node-input-output" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-output" style="width: 70%;">&nbsp;&nbsp;<i class="fa fa-sign-out"></i> Use output</label>
+        <input type="checkbox" id="node-input-bootstrap" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-output" style="width: 70%;">&nbsp;&nbsp;<i class="fa fa-sign-out"></i> Send msg on startup</label>
+    </div>
+    <div class="form-row" id="bootstrapValue">
+        <label for="node-input-bootstrapValue"><i class="fa fa-sign-out"></i> Startmsg</label>
+        <input type="text" id="node-input-bootstrapValue" style="width:70%">
+        <input type="hidden" id="node-input-bootstrapType">
     </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
@@ -145,5 +185,7 @@
     <li><strong>Identity</strong>: An optional property that can be configured in the node or, if left blank, can be set by <code>msg.id</code>. If set, the prorerty is added to the output message as <code>msg.id</code> and can for example be used to identify a specific item when using the <i>Bundle</i> node.</li>
     <li><strong>State</strong>: Select which property from the incoming <code>msg</code> to be used as the <i>Item state</i> value, usually <code>msg.payload</code>. The <i>Item</i> node always saves the whole <code>msg</code> object, and another property can be used as output from a Value node if so desired.</li>
     <li><strong>Use output</strong> can be selected to send the incoming value further to another node. The <i>state</i> value is sent on by default, but any property in the <code>msg</code> object can be selected.</li>
+    <li>If outpout is used <strong>Send msg on startup</strong> can be selected to send an initial msg further to another node at startup.</li>
+
     <li><strong>Name</strong>: Node name, used to select the Item in <i>Value</i>, <i>Gate</i>, <i>Bundle</i> and <i>Event</i> nodes.</li>    
 </script>
