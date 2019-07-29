@@ -17,9 +17,9 @@ npm install node-red-contrib-hal
 
 ## Messaging format
 
-The **Item node** will always save the whole incoming *msg*, so it's possible to use different properties in different **Event nodes** or **Value nodes**.
+The **Item node** will always save the whole incoming *msg*, so it's possible to output different properties from different **Value nodes**.
 
-THe **Item node** will also add the following properties:
+The **Item node** will also add the following properties:
 ```javascript
 msg.payload = {
     id : 'xxx',             //(optional) an Item identifier
