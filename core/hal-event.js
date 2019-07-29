@@ -4,7 +4,7 @@ module.exports = function(RED) {
     function halEvent(config) {
         RED.nodes.createNode(this,config);
         this.trigger = config.trigger;
-        this.operator = config.operator;
+        this.item = config.item;
         this.compareValue = config.compareValue;
         this.compareType = config.compareType;
         this.outputValue = config.outputValue;
@@ -17,7 +17,7 @@ module.exports = function(RED) {
         node.compareValue = utils.convertTo[node.compareType](node.compareValue);
 
         node.listener = function(event) {
-            if (utils.compare[node.operator](event.state,node.compareValue,event.oldState)){
+            if (utils.compare[node.item](event.state,node.compareValue,event.oldState)){
                 var msg = {};
                 msg._msgid = RED.util.generateId();
                 msg.topic = event.topic ? event.topic : undefined;

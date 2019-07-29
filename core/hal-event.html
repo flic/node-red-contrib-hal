@@ -11,7 +11,7 @@
             name: {
                 value:""
             },
-            trigger: {
+            item: {
                 value: "",
                 required: true
             },
@@ -70,11 +70,11 @@
 
             //Add items
             for (var d in itemsList) {
-                $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-trigger");
+                $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-item");
             }
-            if (this.trigger) {
-                $("#node-input-trigger").val(this.trigger);
-                $('#node-input-trigger').trigger('change');
+            if (this.item) {
+                $("#node-input-item").val(this.item);
+                $('#node-input-item').trigger('change');
             }
             //Add operators
             for (var d in operators) {
@@ -91,7 +91,7 @@
             $('#node-input-compareValue').typedInput({
                 default: 'num',
                 typeField: $("#node-input-compareType"),
-                types: ['str','num','json']
+                types: ['str','num','json','re']
             });
             if (this.compareValue) {
                 $("#node-input-compareValue").typedInput('value',this.compareValue).typedInput('type',this.compareType);                           
@@ -125,13 +125,15 @@
                 var type = $("#node-input-operator").children("option:selected").val();
                 if (type.length < 4) {
                         $("#node-input-operator").css({ "width": "60px" });
-                    } else if (type === "regex") {
-                        $("#node-input-operator").css({ "width": "137px" });
+                        $("#node-input-compareValue").typedInput('width','calc(70% - 60px)')
                     } else {
                         $("#node-input-operator").css({ "width": "120px" });
+                        $("#node-input-compareValue").typedInput('width','calc(70% - 120px)')
+
                     }
                 if (type == "full" || type == "update" || type == "change" || type === "true" || type === "false" || type === "null" || type === "nnull" || type === "else") {
                     $("#node-input-compareValue").typedInput('hide');
+                    $("#node-input-operator").css({ "width": "40%" });
                 } else {
                     $("#node-input-compareValue").typedInput('show');
                 }
@@ -146,10 +148,13 @@
             <input type="text" id="node-input-config" style="width:70%" placeholder="Event config">
     </div>
     <div class="form-row">
-        <label for="node-input-trigger"><i class="fa fa-microchip"></i> Item</label>
-        <select id="node-input-trigger" style="width:30%"></select>
+        <label for="node-input-item"><i class="fa fa-microchip"></i> Item</label>
+        <select id="node-input-item" style="width:70%"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-operator"><i class="fa fa-play-circle"></i> Trigger</label>
         <select id="node-input-operator" style="width:10%"></select>
-        <input type="text" id="node-input-compareValue" style="width:30%">
+        <input type="text" id="node-input-compareValue" style="width:60%">
         <input type="hidden" id="node-input-compareType">
     </div>
     <div class="form-row">
