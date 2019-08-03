@@ -1,6 +1,4 @@
 module.exports = function(RED) {
-    var utils = require("../lib/utils");
-
     function halValue(config) {
         RED.nodes.createNode(this,config);
         this.item = config.item;
@@ -17,7 +15,6 @@ module.exports = function(RED) {
             }
 
             msg.topic = item.topic ? item.topic : msg.topic;
-            msg.id = item.identifier ? item.identifier : msg.id;
             msg.name = item.name;
 
             if (node.outputType == 'state') {

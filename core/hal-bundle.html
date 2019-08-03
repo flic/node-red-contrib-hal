@@ -3,10 +3,8 @@
         category: 'Home Automation',
         color: '#EBA8FF',
         defaults: {
-            name: {
-                value:""
-            },
-            bundleset: {}
+            name:       {},
+            bundleset:  {}
         },
         inputs:1,
         outputs:1,
@@ -31,86 +29,91 @@
             //No item nodes have been created
             if(itemsList.length===0){
                 $("<li>No items found</li>").appendTo("#node-input-bundle-container");
-                $("#node-input-add-bundle").hide();
                 return;
             }
 
-            var createBundle = function(i,bundle){
-                $("<li/>",{id:"node-input-bundle-line"+i}).appendTo("#node-input-bundle-container");
-                $("<div/>",{id:"node-input-bundle-div"+i}).appendTo("#node-input-bundle-line"+i);
-
-                //Add item
-                $("<select/>",{class:"node-input-bundle-item",id:"node-input-bundle-item"+i,style:"width:46%"}).appendTo("#node-input-bundle-div"+i);
-                for (var d in itemsList) {
-                    $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-bundle-item"+i);
-                }
-                            
-                //Add output
-                var stateType = {
+            //Types
+            var stateType = {
                     value: "state",
                     label: "item state",
                     hasValue: false
-                };
-                
-                $('<input/>',{class:"node-input-bundle-value",id:"node-input-bundle-value"+i,type:"text",style:"width:46%;margin-left: 5px;"}).appendTo("#node-input-bundle-div"+i).typedInput({
-                    default: 'msg',
-                    types: ['msg',stateType,'flow','global','str','num','bool','json']
-                });
+            };
 
-                if (bundle) {
-                    if (typeof bundle.value == 'object') {
-                        bundle.value = JSON.stringify(bundle.value);
-                    }
-                    $("#node-input-bundle-item"+i).val(bundle.item);
-                    $("#node-input-bundle-item"+i).trigger('change');
-                    $("#node-input-bundle-value"+i).typedInput('type',bundle.type).typedInput('value',bundle.value);
-                } else {
-                    $("#node-input-bundle-value"+i).typedInput('value','payload');
-                }
-
-                //Add delete button
-                $('<a/>',{href:"#",class:"btn btn-mini",id:"node-input-bundle-delete"+i, style:"margin-left: 5px;"}).appendTo("#node-input-bundle-div"+i);
-                $('<i/>',{class:"fa fa-remove"}).appendTo("#node-input-bundle-delete"+i);
-                
-                //Delete
-                $("#node-input-bundle-delete"+i).click(function() {
-                    $("#node-input-bundle-line"+i).css({"background":"#fee"});
-                    $("#node-input-bundle-line"+i).fadeOut(300, function() {
-                        $(this).remove();
-                        $("#node-input-bundle-container").children().each(function(i) {
-                            $(this).find(".node-input-bundle-index").html(i+1);
-                        });
+            //Bundle
+            $("#node-input-bundle-container").editableList({
+                addItem: function(container,i,opt) {
+                    var bundle = opt;
+                    container.css({
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap'
                     });
-                });
-            }
 
-            $("#node-input-add-bundle").click(function() {
-                createBundle($("#node-input-bundle-container").children().length+1,null);
-                $("#node-input-bundle-container-div").scrollTop($("#node-input-bundle-container-div").get(0).scrollHeight);
+                    //Add rows
+                    var row1 = $('<div/>').appendTo(container);
+                    var row2 = $('<div/>',{style:"margin-top:8px;"}).appendTo(container);
+
+                    //Add labels
+                    var label1 = $('<div/>',{style:"display:inline-block;text-align:right; width:50px; padding-right:10px; box-sizing:border-box;"})
+                        .appendTo(row1);
+                    label1.append('Item');
+                    var label2 = $('<div/>',{style:"display:inline-block;text-align:right; width:50px; padding-right:10px; box-sizing:border-box;"})
+                        .appendTo(row2);
+                    label2.append('Output');
+
+                    //Add items
+                    var itemsField = $('<select/>',{class:"node-input-bundle-item",style:"width:calc(100% - 60px)"}).appendTo(row1);
+                    for (var d in itemsList) {
+                        itemsField.append($("<option></option>").val(itemsList[d].id).text(itemsList[d].name));
+                    }
+
+                    //Add output value field
+                    var outputField = $('<input/>',{class:"node-input-bundle-value",type:"text"})
+                        .appendTo(row2)
+                        .typedInput({
+                            default:'msg',
+                            types:['msg',stateType,'flow','global','str','num','bool','json']
+                        });
+                        outputField.typedInput('width','calc(100% - 50px)');
+
+
+                    //Add values
+                    if (Object.keys(bundle).length != 0) {
+                        itemsField.val(bundle.item);
+                        outputField.typedInput('value',bundle.value);
+                        outputField.typedInput('type',bundle.type);
+                    } else {
+                        itemsField.val(itemsList[0].id);
+                        outputField.typedInput('value','payload');
+                    }
+                },
+                removable: true,
+                sortable: true,
+                addButton: "Item"
             });
 
-            //Generate all saved bundles
+            //Add bundles
             if (this.bundleset) {
-                for (var i=0;i<this.bundleset.length;i++) {
+                for (var i=0; i<this.bundleset.length; i++) {
                     var bundle = this.bundleset[i];
-                    createBundle(i+1,bundle);
+                    $("#node-input-bundle-container").editableList('addItem',bundle);
                 }
             } else {
-                createBundle(1,null);
+                $("#node-input-bundle-container").editableList('addItem',null);              
             }
         },
         oneditsave: function() {
             var bundlecontainer = $("#node-input-bundle-container").children();
             var node = this;
-            node.bundleset= [];
+            node.bundleset = [];
 
             bundlecontainer.each(function(i) {
                 var bundle = $(this);
-                var item = bundle.find(".node-input-bundle-item option:selected").val();
-                var value = bundle.find(".node-input-bundle-value").typedInput('value');
-                var type  = bundle.find(".node-input-bundle-value").typedInput('type');
-
-                var b = {item:item, value:value, type:type};
+                var b = {
+                    item:bundle.find(".node-input-bundle-item option:selected").val(),
+                    value:bundle.find(".node-input-bundle-value").typedInput('value'),
+                    type:bundle.find(".node-input-bundle-value").typedInput('type'),
+                }
+                debugger
                 node.bundleset.push(b);
             });
         }
@@ -122,23 +125,13 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
     </div>
-    <div class="form-row node-input-bundle-container-row" style="margin-bottom: 0px;">
-        <table style="margin: 0;border: 0px; width: 92%;">
-            <tr style="text-align: center;">
-                <td><i class="fa fa-microchip"></i> Item</td><td><i class="fa fa-sign-out"></i> Output</td>
-            </tr>
-        </table>
-        <div id="node-input-bundle-container-div" style="box-sizing: border-box; border-radius: 5px; height: 310px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
-            <ol id="node-input-bundle-container" style=" list-style-type:none; margin: 0; "></ol>
-        </div>
-    </div>
     <div class="form-row">
-        <a href="#" class="btn btn-mini" id="node-input-add-bundle" style="margin-top: 4px;"><i class="fa fa-plus"></i> item</a>
+            <ol id="node-input-bundle-container"</ol>
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="bundle">
     <p>The Bundle node allows you to group multiple <i>Items</i> together and send their values on, one after another, when triggered.</p>
     <li><strong>Name</strong>: Node name.</li> 
-    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. <code>msg.name</code>, <code>msg.topic</code> and/or <code>msg.id</code> is always added to the outgoing <code>msg</code> if configured in the <i>Item</i> node.</li>
+    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. The configured <code>msg.name</code> and <code>msg.topic</code> from the <i>Item</i> is always added to the outgoing <code>msg</code>.</li>
 </script>

@@ -8,19 +8,34 @@
                 type: "event-config",
                 required: true
             },
-            name:       { required: true },
-            topic:      { value: "" },
-            filter:     { value: false },
-            identifier: { value: "" },
-            rules:      {},
-            output:     { value: false, required: true },
-            outputValue:{ value: "payload", required: false },
-            outputType: { required: true },
-            bootstrap:  { value: false, required: true },
-            bootstrapValue:{},
-            bootstrapType: {},
-            stateProperty: { required: true },
-            outputs:    { value: 0 } //Storing if outputs is enabled.
+            name:           { required: true, 
+                validate:function(v) {
+                    //Check for name collisions
+                    var itemsList = [];
+                    RED.nodes.eachNode(function (cf) {
+                        if (cf.type === "item") {
+                            itemsList.push(cf);
+                        }
+                    });
+                    if(itemsList.length===0){ return true; }
+                    for (var d in itemsList) {
+                        if (v == itemsList[d].name && itemsList[d].id !== this.id) { return false; }
+                    }
+                    return true;
+                }
+            },
+            filter:         { value: "" },
+            filterType:     {},
+            topic:          { value: "" },
+            rules:          {},
+            output:         { value: false, required: true },
+            outputValue:    { value: "payload", required: false },
+            outputType:     { required: true },
+            bootstrap:      { value: false, required: true },
+            bootstrapValue: {},
+            bootstrapType:  {},
+            stateProperty:  { required: true },
+            outputs:        { value: 0 } //Storing if outputs is enabled.
         },
         inputs: 1,
         outputs: 0,
@@ -29,41 +44,25 @@
             return this.name || "item";
         },
         oneditprepare: function () {
-
+            var operators = [
+                { v: "eq", t: "==" },
+                { v: "neq", t: "!=" },
+                { v: "lt", t: "<" },
+                { v: "lte", t: "<=" },
+                { v: "gt", t: ">" },
+                { v: "gte", t: ">=" },
+                { v: "cont", t: "contains" },
+                { v: "regex", t: "matches regex" },
+                { v: "true", t: "is true" },
+                { v: "false", t: "is false" },
+                { v: "always", t: "always" },
+                { v: "otherwise", t: "otherwise" }
+            ];
             //Show/hide tooltips
             var numModify = 0;
             var numNumber = 0;
 
-            function resizeRule(rule) {
-                var newWidth = rule.width();
-                rule.find('.red-ui-typedInput').typedInput("width",newWidth-25);
-            }
-
             //Types
-            var typeGreaterThan = {
-                value: "gt",
-                label: "Greater than",
-                icon: "fa fa-angle-right",
-                hasValue: true,
-                validate: /^[0-9]*$/
-            };
-            var typeLessThan = {
-                value: "lt",
-                label: "Less than",
-                icon: "fa fa-angle-left",
-                hasValue: true,
-                validate: /^[0-9]*$/
-            };
-            var typeAlways = {
-                value: "always",
-                label: "Always",
-                hasValue: false
-            };
-            var typeOtherwise = {
-                value: "otherwise",
-                label: "Otherwise",
-                hasValue: false
-            };
             var typeDrop = {
                 value: "drop",
                 label: "Drop message",
@@ -81,8 +80,28 @@
                 label: "Convert to number",
                 hasValue: false
             }
+            var typeMQTT = {
+                value: "mqtt",
+                label: "MQTT Topic",
+                icon: "fa fa-tasks",
+                validate: /^(#$|(\+|[^+#]*)(\/(\+|[^+#]*))*(\/(\+|#|[^+#]*))?$)/,
+                hasValue: true
+            }
 
-            //Add property
+            //Incoming topic filter
+            $('#node-input-filter').typedInput({
+                default: 'str',
+                typeField: $("#node-input-filterType"),
+                types: ['str','re',typeMQTT],
+            });
+            if (this.filter) {
+                $("#node-input-filter").typedInput('value',this.filter).typedInput('type',this.filterType);                           
+            }
+            //Outgoing topic
+            if (this.topic) {
+                $("#node-input-topic").val('value',this.topic);                           
+            }            
+            //State property
             if (this.stateProperty) {
                 $("#node-input-stateProperty").val(this.stateProperty);
                 $('#node-input-stateProperty').trigger('change');                
@@ -109,38 +128,35 @@
                     var row2 = $('<div/>',{style:"margin-top:8px;"}).appendTo(container);
 
                     //Add labels
-                    var label1 = $('<div/>',{style:"display:inline-block;text-align:right; width:20px; padding-right:5px; box-sizing:border-box;"})
+                    var label1 = $('<div/>',{style:"display:inline-block;text-align:right; width:45px; padding-right:10px; box-sizing:border-box;"})
                         .appendTo(row1);
-                    label1.append($('<i/>',{class:"fa fa-sign-in"}));
-                    var label2 = $('<div/>',{style:"display:inline-block;text-align:right; width:20px; padding-right:5px; box-sizing:border-box;"})
+                    label1.append('Rule');
+                    var label2 = $('<div/>',{style:"display:inline-block;text-align:right; width:45px; padding-right:10px; box-sizing:border-box;"})
                         .appendTo(row2);
-                    label2.append($('<i/>',{class:"fa fa-sign-out"}));
+                    label2.append("Change")
+
+                    //Add operators
+                    var operatorField = $('<select/>',{class:"node-input-rule-operator"}).appendTo(row1);
+                    for (var d in operators) {
+                        operatorField.append($("<option></option>").val(operators[d].v).text(operators[d].t));
+                    }
                     //Add compare value field
-                    var compareField = $('<input/>',{class:"node-input-rule-compare",type:"text"})
+                    var valueField = $('<input/>',{class:"node-input-rule-compare",type:"text"})
                         .appendTo(row1)
-                        .attr("placeholder","if match")
                         .typedInput({
-                            default:'num',
-                            types:['str','num','bool','re',typeGreaterThan,typeLessThan,typeAlways,typeOtherwise],
-                        });
+                            default:'num'
+                    });
 
                     //Add result value field
                     var resultField = $('<input/>',{class:"node-input-rule-result",type:"text"})
                         .appendTo(row2)
-                        .attr("placeholder","change to")
                         .typedInput({
                             default:'str',
                             types:['str','num','bool',typeModify,typeNumber,typeDrop]
                         });
-                    
-                    //Add values
-                    if (rule) {
-                        compareField.typedInput('value',rule.cv);
-                        compareField.typedInput('type',rule.ct);
-                        resultField.typedInput('value',rule.rv);
-                        resultField.typedInput('type',rule.rt);
-                    }
+                        resultField.typedInput('width','calc(100% - 55px)');
 
+                    //Show/Hide tooltips
                     resultField.change( function () {
                         var rules = $("#node-input-rule-container").editableList('items');
                         
@@ -164,10 +180,45 @@
                             }
                         });
                     });
+
+                    //Show/Hide value field
+                    operatorField.change( function() {
+                        var type = $(this).children("option:selected").val();
+                        if (type.length < 4) {
+                            $(this).css({ "width": "60px" });
+                            valueField.typedInput('width','calc(100% - 60px - 55px)')
+                        } else {
+                            $(this).css({ "width": "120px" });
+                            valueField.typedInput('width','calc(100% - 120px - 55px)')
+
+                        }
+                        if (type == "always" || type == "otherwise" || type === "true" || type === "false") {
+                            valueField.typedInput('hide');
+                            $(this).css({ "width": "40%" });
+                        } else {
+                            valueField.typedInput('show');
+                        }
+                        if (type == "regex") {
+                            valueField.typedInput('types',['re']);
+                            valueField.typedInput('type','re');
+                        } else {
+                            valueField.typedInput('types',['str','num','bool']);
+                            valueField.typedInput('type',rule.ct);
+                        }
+                    });
+
+                    //Add values
+                    if (Object.keys(rule).length != 0) {
+                        operatorField.val(rule.op);
+                        valueField.typedInput('value',rule.cv);
+                        valueField.typedInput('type',rule.ct);
+                        resultField.typedInput('value',rule.rv);
+                        resultField.typedInput('type',rule.rt);
+                    }
+
+                    operatorField.trigger('change');
                     resultField.trigger('change');
-                    resizeRule(container);
                 },
-                resizeItem: resizeRule,
                 removable: true,
                 sortable: true,
                 addButton: "Rule"
@@ -204,9 +255,11 @@
             } 
 
             //Add rules
-            for (var i=0; i<this.rules.length; i++) {
-                var rule = this.rules[i];
-                $("#node-input-rule-container").editableList('addItem',rule);
+            if (this.rules) {
+                for (var i=0; i<this.rules.length; i++) {
+                    var rule = this.rules[i];
+                    $("#node-input-rule-container").editableList('addItem',rule);
+                }
             }
 
             //Show/Hide output field
@@ -238,11 +291,12 @@
                 node.outputs = 0;
             }
             var rules = $("#node-input-rule-container").editableList('items');
-            var ruleset;
             node.rules= [];
+            var antal = rules.length;
             rules.each(function(i) {
                 var rule = $(this);
                 var r = {
+                    op:rule.find(".node-input-rule-operator option:selected").val(),
                     cv:rule.find(".node-input-rule-compare").typedInput('value'),
                     ct:rule.find(".node-input-rule-compare").typedInput('type'),
                     rv:rule.find(".node-input-rule-result").typedInput('value'),
@@ -261,31 +315,27 @@
     </div>
 
     <div class="form-row">
+        <label for="node-input-filter"><i class="fa fa-filter"></i> Topic filter</label>
+        <input type="text" id="node-input-filter" placeholder="Filter on incoming topic" style="width:70%;">
+        <input type="hidden" id="node-input-filterType">
+    </div>
+    <div class="form-row">
         <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</label>
-        <input type="text" id="node-input-topic" placeholder="Topic" style="width=70%">
-    </div>
-    <div class="form-row">
-        <label>&nbsp;</label>
-        <input type="checkbox" id="node-input-filter" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-filter" style="width: 70%;">&nbsp;&nbsp;<i class="fa fa-filter"></i> Filter on Topic</label>
-    </div>
-    <div class="form-row">
-        <label for="node-input-identifier"><i class="fa fa-id-card-o"></i> Identifier</label>
-        <input type="text" id="node-input-identifier" placeholder="Identifier" style="width=70%">
+        <input type="text" id="node-input-topic" style="width=70%">
     </div>
     <div class="form-row">
         <label for="node-input-stateProperty"><i class="fa fa-sign-in"></i> State</label>
-        <input type="text" id="node-input-stateProperty" placeholder="payload" style="width:70%>
+        <input type="text" id="node-input-stateProperty" placeholder="payload" style="width:70%;">
         <input type="hidden" id="node-input-propertyType">
     </div>
     <div class="form-row">
-        <label for="conditions-ol"><i class="fa fa-sign-in"></i> Rules</label>
-        <div id="rule-ol" style="width:70%;display: inline-block;vertical-align: top;">
-        <ol id="node-input-rule-container"</ol>
-        </div>
-        <div class="form-tips" id="toNumberNote" hidden style="margin-top: 5px;"><b>Note:</b> Convert to number can only be used on string values</div>
-        <div class="form-tips" id="modifyNote" hidden style="margin-top: 5px;"><b>Note:</b> Modify example: '/10' '*100' '+20'</div>
+        <label style="display: block; width:100%;""><i class="fa fa-exchange"></i> Conversion rules</label>
     </div>
+    <div class="form-row">
+            <ol id="node-input-rule-container"</ol>
+    </div>
+    <div class="form-tips" id="toNumberNote" hidden style="margin-top: 5px;"><b>Note:</b> Convert to number can only be used on string values</div>
+    <div class="form-tips" id="modifyNote" hidden style="margin-top: 5px;"><b>Note:</b> Modify example: '/10' '*100' '+20'</div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
@@ -315,12 +365,11 @@
 <script type="text/x-red" data-help-name="item">
     <p>The Item node represents a single device function, like a switch or a thermometer. It can be queried by the <i>Value</i>, <i>Gate</i> and <i>Bundle</i> nodes and can trigger an event using <i>Event</i> nodes.</p>
     <li><strong>Config</strong>: Used for firing events between nodes. Use the same config for all nodes that should be able to communicate.</li>
-    <li><strong>Topic</strong>: An optional property that can be configured in the node or, if left blank, can be set by <code>msg.topic</code>. If <em>Filter on Topic</em> is selected <code>msg.topic</code> of incoming messages must match the configured value for the message to be accepted.</li>
-    <li><strong>Identity</strong>: An optional property that can be configured in the node or, if left blank, can be set by <code>msg.id</code>. If set, the prorerty is added to the output message as <code>msg.id</code> and can for example be used to identify a specific item when using the <i>Bundle</i> node.</li>
+    <li><strong>Topic filter</strong>: If configured, this parameter must match <code>msg.topic</code> on the incoming message. If not, the message is dropped. <i>Topic filter</i> can be a text string, a regex expression or an MQTT-formatted topic with + and # wildcards.</li>
+    <li><strong>Topic</strong>: An optional property that can be configured in the node or, if left blank, can be set by <code>msg.topic</code>.</li>
     <li><strong>State</strong>: Select which property from the incoming <code>msg.payload</code> to be used as the <i>Item state</i> value. The <i>Item</i> node always saves the whole <code>msg.payload</code> object, and another property can be used as output from a Value node if so desired.</li>
-    <li><strong>Rules</strong>: Rules can be used to modify the <i>Item state</i> value in a variety of ways using a simple if-then formula. If no matching rule is found the <i>Item state</i> value will be unchanged. If more than one matching rule is found they will be executed in order from the top down.</li>
+    <li><strong>Conversion rules</strong>: Rules can be used to modify the <i>Item state</i> value in a variety of ways using a simple if-then formula. If no matching rule is found the <i>Item state</i> value will be unchanged. If more than one matching rule is found they will be executed in order from the top down. <em>Convert to number</em> converts an incoming string to a numeric value. <em>Modify</em> can be used to do simple arithmetic (*10, -2, /5, ...) on a numeric value.</li>
     <li><strong>Use output</strong> can be selected to send the incoming value further to another node. The <i>state</i> value is sent on by default, but any property in the <code>msg.payload</code> object can be selected.</li>
     <li><strong>Send bootstrap msg</strong> can be selected to send an initial bootstrap msg at startup.</li>
-
     <li><strong>Name</strong>: Node name, used to select the Item in <i>Value</i>, <i>Gate</i>, <i>Bundle</i> and <i>Event</i> nodes.</li>    
 </script>

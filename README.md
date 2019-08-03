@@ -1,5 +1,8 @@
 # node-red-contrib-hal [![npm version](https://badge.fury.io/js/node-red-contrib-hal.svg)](https://badge.fury.io/js/node-red-contrib-hal)
 A set of nodes to help with basic home automation logic.
+
+**Note:** Breaking changes between 0.x and 1.x!
+
 ## Install
 ```bash
 cd ~/.node-red
@@ -22,7 +25,6 @@ The **Item node** will always save the whole incoming *msg*, so it's possible to
 The **Item node** will also add the following properties:
 ```javascript
 msg.payload = {
-    id : 'xxx',             //(optional) an Item identifier
     topic: 'xxx',           //(optional) a Topic identifier
     name: 'Item name'       //The Item Name parameter
 }

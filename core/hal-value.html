@@ -3,20 +3,10 @@
         category: 'Home Automation',
         color: '#EBA8FF',
         defaults: {
-            name: {
-                value:""
-            },
-            item: {
-                value: "",
-                required: true
-            },
-            outputValue: {
-                value: "payload",
-                required: false
-            },
-            outputType: {
-                required: true
-            }
+            name:           {},
+            item:           { required: true },
+            outputValue:    { value: "payload" },
+            outputType:     { required: true }
         },
         inputs:1,
         outputs:1,
@@ -94,6 +84,6 @@
 <script type="text/x-red" data-help-name="value">
     <p>The Value node queries a specific <i>Item</i> and sends the <i>Item</i> value on to the next node.</p>
     <li><strong>Item</strong>: Select the <i>Item</i>.</li>
-    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. <code>msg.name</code>, <code>msg.topic</code> and/or <code>msg.id</code> is always added to the outgoing <code>msg</code> if configured in the <i>Item</i> node.</li>
+    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. The configured <code>msg.name</code> and <code>msg.topic</code> from the <i>Item</i> is always added to the outgoing <code>msg</code>.</li>
     <li><strong>Name</strong>: Node name.</li>  
 </script>

@@ -25,5 +25,8 @@
       "hal-gate": "core/hal-gate.js",
       "hal-bundle": "core/hal-bundle.js"
     }
+  },
+  "dependencies": {
+    "mqtt-pattern": "^1.2.0"
   }
 }

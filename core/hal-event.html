@@ -8,31 +8,13 @@
                 type: "event-config",
                 required: true
             },
-            name: {
-                value:""
-            },
-            item: {
-                value: "",
-                required: true
-            },
-            operator: {
-                value: "",
-                required: true
-            },
-            compareValue: {
-                value: "",
-                required: false
-            },
-            compareType: {
-                required: false
-            },
-            outputValue: {
-                value: "",
-                required: false
-            },
-            outputType: {
-                required: true
-            }
+            name:           {},
+            item:           { value: "", required: true },
+            operator:       { value: "", required: true },
+            compareValue:   { value: "" },
+            compareType:    {},
+            outputValue:    { value: "" },
+            outputType:     { required: true }
         },
         inputs:0,
         outputs:1,
@@ -91,7 +73,7 @@
             $('#node-input-compareValue').typedInput({
                 default: 'num',
                 typeField: $("#node-input-compareType"),
-                types: ['str','num','json','re']
+                types: ['str','num','json']
             });
             if (this.compareValue) {
                 $("#node-input-compareValue").typedInput('value',this.compareValue).typedInput('type',this.compareType);                           
@@ -131,11 +113,18 @@
                         $("#node-input-compareValue").typedInput('width','calc(70% - 120px)')
 
                     }
-                if (type == "full" || type == "update" || type == "change" || type === "true" || type === "false" || type === "null" || type === "nnull" || type === "else") {
+                if (type == "full" || type == "update" || type == "change" || type === "true" || type === "false") {
                     $("#node-input-compareValue").typedInput('hide');
                     $("#node-input-operator").css({ "width": "40%" });
                 } else {
                     $("#node-input-compareValue").typedInput('show');
+                }
+                if (type == "regex") {
+                    $('#node-input-compareValue').typedInput('types',['re']);
+                    $('#node-input-compareValue').typedInput('type','re');
+                } else {
+                    $('#node-input-compareValue').typedInput('types',['str','num','json']);
+                    $('#node-input-compareValue').typedInput('type',this.compareType);
                 }
             });
         }
@@ -172,6 +161,6 @@
     <p>The Event node is used to initiate a flow when certain <i>Item</i> conditions are met.</p>
     <li><strong>Config</strong>: Used for firing events between nodes. Use the same config for all nodes that should be able to communicate.</li>
     <li><strong>Item</strong>: Select which <i>Item</i> and what conditions are to be met for the event to trigger.</li>
-    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. <code>msg.name</code>, <code>msg.topic</code> and/or <code>msg.id</code> is always added to the outgoing <code>msg</code> if configured in the <i>Item</i> node.</li>
+    <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. The configured <code>msg.name</code> and <code>msg.topic</code> from the <i>Item</i> node is always added to the outgoing <code>msg</code>.</li>
     <li><strong>Name</strong>: Node name.</li>    
 </script>

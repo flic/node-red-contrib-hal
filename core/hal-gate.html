@@ -8,14 +8,9 @@
                 type: "event-config",
                 required: true
             },
-            name: {
-                value:""
-            },
-            rules: {},
-            checkall: {
-                value:"true",
-                required:true
-            }
+            name:       {},
+            rules:      {},
+            checkall:   { value:"true", required:true }
         },
         inputs:1,
         outputs:2,
@@ -35,9 +30,7 @@
                 { v: "cont", t: "contains" },
                 { v: "regex", t: "matches regex" },
                 { v: "true", t: "is true" },
-                { v: "false", t: "is false" },
-                { v: "null", t: "is null" },
-                { v: "nnull", t: "is not null" }
+                { v: "false", t: "is false" }
             ];
             //get all item nodes and sort them alphabetically
             var itemsList = [];
@@ -55,82 +48,100 @@
             //No item nodes have been created
             if(itemsList.length===0){
                 $("<li>No items found</li>").appendTo("#node-input-rule-container");
-                $("#node-input-add-rule").hide();
                 return;
             }
-            var createRule = function(i,rule){
-                $("<li/>",{id:"node-input-rule-line"+i}).appendTo("#node-input-rule-container");
-                $("<div/>",{id:"node-input-rule-div"+i}).appendTo("#node-input-rule-line"+i);
-                $("<select/>",{class:"node-input-rule-item",id:"node-input-rule-item"+i,style:"width:30%"}).appendTo("#node-input-rule-div"+i);
-                for (var d in itemsList) {
-                    $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-rule-item"+i);
-                }
 
-                $("<select/>",{class:"node-input-rule-operator",id:"node-input-rule-operator"+i,style:"width:10%;margin-left: 5px;"}).appendTo("#node-input-rule-div"+i);
-                for (var d in operators) {
-                    $("<option value='" + operators[d].v + "'> " + operators[d].t + "</option>").appendTo("#node-input-rule-operator"+i);
-                }
-                            
-                //Add comparison value
-                $('<input/>',{class:"node-input-rule-value",id:"node-input-rule-value"+i,type:"text",style:"width:30%;margin-left: 5px;"}).appendTo("#node-input-rule-div"+i).typedInput({
-                    default:'num',
-                    types:['msg','flow','global','str','num','env']
-                });
-                
-                //Show/Hide value field
-                $("#node-input-rule-operator"+i).change( function() {
-                    var type = $("#node-input-rule-operator"+i).children("option:selected").val();
-                    if (type.length < 4) {
-                            $("#node-input-rule-operator"+i).css({ "width": "60px" });
-                        } else if (type === "regex") {
-                            $("#node-input-rule-operator"+i).css({ "width": "135px" });
-                        } else {
-                            $("#node-input-rule-operator"+i).css({ "width": "120px" });
-                        }
-                    if (type === "true" || type === "false" || type === "null" || type === "nnull") {
-                        $("#node-input-rule-value"+i).typedInput('hide');
-                    } else {
-                        $("#node-input-rule-value"+i).typedInput('show');
-                    }
-                });
+           //Rules
+           $("#node-input-rule-container").editableList({
+                addItem: function(container,i,opt) {
+                    var rule = opt;
 
-                if (rule) {
-                    $("#node-input-rule-item"+i).val(rule.item);
-                    $("#node-input-rule-item"+i).trigger('change');
-                    $("#node-input-rule-operator"+i).val(rule.operator);
-                    $("#node-input-rule-operator"+i).trigger('change');
-                    $("#node-input-rule-value"+i).typedInput('type',rule.type).typedInput('value',rule.value);
-                }
-
-                //Add delete button
-                $('<a/>',{href:"#",class:"btn btn-mini",id:"node-input-rule-delete"+i, style:"margin-left: 5px;"}).appendTo("#node-input-rule-div"+i);
-                $('<i/>',{class:"fa fa-remove"}).appendTo("#node-input-rule-delete"+i);
-                
-                //Delete
-                $("#node-input-rule-delete"+i).click(function() {
-                    $("#node-input-rule-line"+i).css({"background":"#fee"});
-                    $("#node-input-rule-line"+i).fadeOut(300, function() {
-                        $(this).remove();
-                        $("#node-input-rule-container").children().each(function(i) {
-                            $(this).find(".node-input-rule-index").html(i+1);
-                        });
+                    container.css({
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap'
                     });
-                });
-            }
 
-            $("#node-input-add-rule").click(function() {
-                createRule($("#node-input-rule-container").children().length+1,{item:"",operator:"",value:"",type:""});
-                $("#node-input-rule-container-div").scrollTop($("#node-input-rule-container-div").get(0).scrollHeight);
+                    //Add rows
+                    var row1 = $('<div/>').appendTo(container);
+                    var row2 = $('<div/>',{style:"margin-top:8px;"}).appendTo(container);
+
+                    //Add labels
+                    var label1 = $('<div/>',{style:"display:inline-block;text-align:right; width:45px; padding-right:10px; box-sizing:border-box;"})
+                        .appendTo(row1);
+                    label1.append('Item');
+                    var label2 = $('<div/>',{style:"display:inline-block;text-align:right; width:45px; padding-right:10px; box-sizing:border-box;"})
+                        .appendTo(row2);
+                    label2.append('Rule');
+
+                    //Add items
+                    var itemsField = $('<select/>',{class:"node-input-rule-item",style:"width:calc(100% - 55px)"}).appendTo(row1);
+                    for (var d in itemsList) {
+                        itemsField.append($("<option></option>").val(itemsList[d].id).text(itemsList[d].name));
+                    }
+
+                    //Add operators
+                    var operatorField = $('<select/>',{class:"node-input-rule-operator"}).appendTo(row2);
+                    for (var d in operators) {
+                        operatorField.append($("<option></option>").val(operators[d].v).text(operators[d].t));
+                    }
+
+                    //Add comparison value field
+                    var valueField = $('<input/>',{class:"node-input-rule-value",type:"text"})
+                        .appendTo(row2)
+                        .typedInput({
+                            default:'num'
+                        });
+                    
+                    //Show/Hide value field
+                    operatorField.change( function() {
+                        var type = $(this).children("option:selected").val();
+                        if (type.length < 4) {
+                            $(this).css({ "width": "60px" });
+                            valueField.typedInput('width','calc(100% - 60px - 55px)')
+                        } else {
+                            $(this).css({ "width": "120px" });
+                            valueField.typedInput('width','calc(100% - 120px - 55px)')
+
+                        }
+                        if (type == "full" || type == "update" || type == "change" || type === "true" || type === "false") {
+                            valueField.typedInput('hide');
+                            $(this).css({ "width": "40%" });
+                        } else {
+                            valueField.typedInput('show');
+                        }
+                        if (type == "regex") {
+                            valueField.typedInput('types',['re']);
+                            valueField.typedInput('type','re');
+                        } else {
+                            valueField.typedInput('types',['msg','flow','global','str','num','env']);
+                            valueField.typedInput('type',rule.ct);
+                        }
+                    });
+
+                    //Add values
+                    if (Object.keys(rule).length === 0) {
+                        rule = {item:itemsList[0].id,operator:operators[0].v,value:'',type:'str'}
+                    }
+                    itemsField.val(rule.item);
+                    operatorField.val(rule.operator);
+                    valueField.typedInput('value',rule.value);
+                    valueField.typedInput('type',rule.type);
+
+                    operatorField.trigger('change');
+                },
+                removable: true,
+                sortable: true,
+                addButton: "Rule"
             });
 
-            //Generate all saved rules
+            //Add rules
             if (this.rules) {
-                for (var i=0;i<this.rules.length;i++) {
+                for (var i=0; i<this.rules.length; i++) {
                     var rule = this.rules[i];
-                    createRule(i+1,rule);
+                    $("#node-input-rule-container").editableList('addItem',rule);
                 }
             } else {
-                createRule(1,null);
+                $("#node-input-rule-container").editableList('addItem',null);              
             }
         },
         oneditsave: function() {
@@ -162,13 +173,8 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
     </div>
-    <div class="form-row node-input-rule-container-row" style="margin-bottom: 0px;">
-        <div id="node-input-rule-container-div" style="box-sizing: border-box; border-radius: 5px; height: 310px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
-            <ol id="node-input-rule-container" style=" list-style-type:none; margin: 0; "></ol>
-        </div>
-    </div>
     <div class="form-row">
-        <a href="#" class="btn btn-mini" id="node-input-add-rule" style="margin-top: 4px;"><i class="fa fa-plus"></i> rule</a>
+        <ol id="node-input-rule-container"</ol>
     </div>
     <div class="form-row">
         <select id="node-input-checkall" style="width:100%; margin-right:5px;">

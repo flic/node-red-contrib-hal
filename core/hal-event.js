@@ -3,8 +3,8 @@ module.exports = function(RED) {
 
     function halEvent(config) {
         RED.nodes.createNode(this,config);
-        this.trigger = config.trigger;
         this.item = config.item;
+        this.operator = config.operator;
         this.compareValue = config.compareValue;
         this.compareType = config.compareType;
         this.outputValue = config.outputValue;
@@ -14,14 +14,13 @@ module.exports = function(RED) {
         node.events = RED.nodes.getNode(config.config);
 
         //Convert types
-        node.compareValue = utils.convertTo[node.compareType](node.compareValue);
+        node.convertedCompareValue = utils.convertTo[node.compareType](node.compareValue);
 
         node.listener = function(event) {
-            if (utils.compare[node.item](event.state,node.compareValue,event.oldState)){
+            if (utils.compare[node.operator](event.state,node.convertedCompareValue,event.oldState)){
                 var msg = {};
                 msg._msgid = RED.util.generateId();
                 msg.topic = event.topic ? event.topic : undefined;
-                msg.id = event.identifier ? event.identifier : undefined;
                 msg.name = event.name;
                 if (node.outputType == 'state') {
                     msg.payload = event.state;
@@ -32,10 +31,10 @@ module.exports = function(RED) {
             }
         }
             
-        node.events.addListener(node.trigger, node.listener);
+        node.events.addListener(node.item, node.listener);
         node.on("close",function() { 
             if (node.listener) {
-                node.events.removeListener(node.trigger, node.listener);
+                node.events.removeListener(node.item, node.listener);
             }
         });
     }

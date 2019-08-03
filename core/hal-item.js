@@ -1,30 +1,47 @@
 module.exports = function(RED) {
     var utils = require("../lib/utils");
+    var MQTTPattern = require("mqtt-pattern");
 
-    function checkRule(rule,state,ruleMatch) {
-        switch (rule.ct) {
-            case 'otherwise':
-                return (ruleMatch == 0);
+    //a=rule value, b=state, c=ruleMatch
+
+
+    //a=msg.topic, b=filter
+    var checkFilter = {
+        'str': function (a, b) { return a === b; },
+        're': function (a, b) { return (new RegExp(b)).test(a+""); },
+        'mqtt': function (a,b) { return MQTTPattern.matches(b,a); }
+    };
+
+    function showState(node,state) {
+        if (state === null) {
+            node.status({fill:"gray",shape:"ring",text:"no value"});
+            return;
+        }
+        switch(typeof state) {
+            case "boolean":
+                if (state) {
+                    node.status({fill:"green",shape:"dot",text:state});
+                } else {
+                    node.status({fill:"gray",shape:"ring",text:state});
+                }
                 break;
-            case 'always':
-                return true;
+            case "number":
+                if (state > 0) {
+                    node.status({fill:"green",shape:"dot",text:state});
+                } else {
+                    node.status({fill:"gray",shape:"ring",text:'0'});
+                }
                 break;
-            case 'str':
-            case 'num':
-            case 'bool':
-                rule.cv = utils.convertTo[rule.ct](rule.cv);
-                return (rule.cv === state);
-                break;
-            case 're':
-                return (state + "").match(new RegExp(rule.cv));
-            case 'gt':
-                return (state > Number(rule.cv));
-                break;
-            case 'lt':
-                return (state < Number(rule.cv));
+            case "string":
+                    if (state != '') {
+                        node.status({fill:"green",shape:"dot",text:state});
+                    } else {
+                        node.status({fill:"gray",shape:"ring",text:state});
+                    }
                 break;
             default:
-                return false;
+                node.status({text:"unknown"});
+                break;
         }
     }
 
@@ -33,7 +50,7 @@ module.exports = function(RED) {
         this.name = config.name;
         this.topic = config.topic;
         this.filter = config.filter;
-        this.identifier = config.identifier;
+        this.filterType = config.filterType;        
         this.output = config.output;
         this.stateProperty = config.stateProperty;
         this.rules = config.rules;
@@ -46,7 +63,7 @@ module.exports = function(RED) {
         this.events = RED.nodes.getNode(config.config);
 
         var node = this;
-        utils.showState(node,null);
+        showState(node,null);
 
         // Send bootstrap output
         if (node.bootstrap === true) {
@@ -63,15 +80,17 @@ module.exports = function(RED) {
                     msg.payload = RED.util.evaluateNodeProperty(node.bootstrapValue,node.bootstrapType,node);
                     msg._msgid = RED.util.generateId();
                     msg.topic = node.topic ? node.topic : null;
-                    msg.id = node.identifier ? node.identifier : null;
                     node.send(msg);
                 }
                 return;
             }
 
-            if (node.filter === true && msg.topic !== node.topic) {
-                node.debug("msg.topic doesn't match configured value and filter is enabled. Dropping message.");
-                return;
+            if (node.filter) {
+
+                if (checkFilter[node.filterType](msg.topic,node.filter) === false) {
+                    node.debug("msg.topic doesn't match configured filter value. Dropping message.");
+                    return;
+                }
             }
 
             //Set state
@@ -80,7 +99,9 @@ module.exports = function(RED) {
             var ruleMatch = 0;
             for (var i = 0; i < node.rules.length; i += 1) {
                 var rule = node.rules[i];
-                if (checkRule(rule,state,ruleMatch)) {
+                rule.cv = utils.convertTo[rule.ct](rule.cv);
+
+                if (utils.compare[rule.op](state,rule.cv,ruleMatch)) {
                     ruleMatch++;
                     switch (rule.rt) {
                         case 'str':
@@ -120,14 +141,13 @@ module.exports = function(RED) {
 
             // set topic & id
             msg.topic = node.topic ? node.topic : msg.topic;
-            msg.id = node.identifier ? node.identifier : msg.id;
 
             // Store msg.payload
             node.payload = msg.payload;
                         
-            utils.showState(node,node.state);
+            showState(node,node.state);
             
-            //node.events.event(node.id,node);
+            node.events.event(node.id,node);
 
             if (node.output === true) {
                 if (node.outputType == 'state') {
