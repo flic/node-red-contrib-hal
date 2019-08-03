@@ -57,6 +57,7 @@ module.exports = function(RED) {
         this.propertyType = config.propertyType;
         this.outputValue = config.outputValue;
         this.outputType = config.outputType;
+        this.outputOnChange = config.outputOnChange;
         this.bootstrap = config.bootstrap;
         this.bootstrapValue = config.bootstrapValue;
         this.bootstrapType = config.bootstrapType;
@@ -102,7 +103,7 @@ module.exports = function(RED) {
                 rule.cv = utils.convertTo[rule.ct](rule.cv);
 
                 if (utils.compare[rule.op](state,rule.cv,ruleMatch)) {
-                    ruleMatch++;
+                    if (rule.op != 'always') { ruleMatch++; };
                     switch (rule.rt) {
                         case 'str':
                         case 'num':
@@ -151,10 +152,18 @@ module.exports = function(RED) {
 
             if (node.output === true) {
                 if (node.outputType == 'state') {
-                    msg.payload = node.state;
+                    var payload = node.state;
                 } else {
-                    msg.payload = RED.util.evaluateNodeProperty(node.outputValue,node.outputType,node,msg);
+                    var payload = RED.util.evaluateNodeProperty(node.outputValue,node.outputType,node,msg);
                 }
+                if (node.outputOnChange) {
+                    if (node.outputPayload == payload) {
+                        return
+                    } else {
+                        node.outputPayload = payload;
+                    }
+                }
+                msg.payload = payload;
                 node.send(msg);
             }
         });
