@@ -109,9 +109,14 @@
                         } else {
                             valueField.typedInput('show');
                         }
-                        if (type == "regex") {
-                            valueField.typedInput('types',['re']);
-                            valueField.typedInput('type','re');
+                        if (type == "regex" || type == "lt" || type == "lte" || type == "gt" || type == "gte") {
+                            if (type == "regex") {
+                                valueField.typedInput('types',['re']);
+                                valueField.typedInput('type','re');
+                            } else {
+                                valueField.typedInput('types',['num']);
+                                valueField.typedInput('type','num');                        
+                            }
                         } else {
                             valueField.typedInput('types',['msg','flow','global','str','num','env']);
                             valueField.typedInput('type',rule.ct);
