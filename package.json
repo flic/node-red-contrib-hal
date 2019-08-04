@@ -1,14 +1,14 @@
 {
   "name": "node-red-contrib-hal",
-  "version": "0.9.8",
+  "version": "1.0.0",
   "description": "A set of nodes to help with basic home automation logic",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/flic/node-red-contrib-hal.git"
   },
   "keywords": [
+    "node-red",
     "home-automation",
-    "state",
     "iot"
   ],
   "author": "Fredrik Furtenbach",
