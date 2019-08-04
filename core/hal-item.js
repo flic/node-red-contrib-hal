@@ -2,9 +2,6 @@ module.exports = function(RED) {
     var utils = require("../lib/utils");
     var MQTTPattern = require("mqtt-pattern");
 
-    //a=rule value, b=state, c=ruleMatch
-
-
     //a=msg.topic, b=filter
     var checkFilter = {
         'str': function (a, b) { return a === b; },
@@ -87,7 +84,6 @@ module.exports = function(RED) {
             }
 
             if (node.filter) {
-
                 if (checkFilter[node.filterType](msg.topic,node.filter) === false) {
                     node.debug("msg.topic doesn't match configured filter value. Dropping message.");
                     return;
@@ -137,7 +133,7 @@ module.exports = function(RED) {
                 }
             }
 
-            node.oldState = node.state ? node.state : "";
+            node.oldState = node.state;
             node.state = state;
 
             // set topic & id

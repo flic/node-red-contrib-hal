@@ -129,12 +129,12 @@
                     var row2 = $('<div/>',{style:"margin-top:8px;"}).appendTo(container);
 
                     //Add labels
-                    var label1 = $('<div/>',{style:"display:inline-block;text-align:right; width:45px; padding-right:10px; box-sizing:border-box;"})
+                    var label1 = $('<div/>',{style:"display:inline-block;text-align:right; width:70px; padding-right:10px; box-sizing:border-box;"})
                         .appendTo(row1);
-                    label1.append('Rule');
-                    var label2 = $('<div/>',{style:"display:inline-block;text-align:right; width:45px; padding-right:10px; box-sizing:border-box;"})
+                    label1.append('If value');
+                    var label2 = $('<div/>',{style:"display:inline-block;text-align:right; width:70px; padding-right:10px; box-sizing:border-box;"})
                         .appendTo(row2);
-                    label2.append("Change")
+                    label2.append("Change to")
 
                     //Add operators
                     var operatorField = $('<select/>',{class:"node-input-rule-operator"}).appendTo(row1);
@@ -155,7 +155,7 @@
                             default:'str',
                             types:['str','num','bool',typeModify,typeNumber,typeDrop]
                         });
-                        resultField.typedInput('width','calc(100% - 55px)');
+                        resultField.typedInput('width','calc(100% - 80px)');
 
                     //Show/Hide tooltips
                     resultField.change( function () {
@@ -187,10 +187,10 @@
                         var type = $(this).children("option:selected").val();
                         if (type.length < 4) {
                             $(this).css({ "width": "60px" });
-                            valueField.typedInput('width','calc(100% - 60px - 55px)')
+                            valueField.typedInput('width','calc(100% - 60px - 80px)')
                         } else {
                             $(this).css({ "width": "120px" });
-                            valueField.typedInput('width','calc(100% - 120px - 55px)')
+                            valueField.typedInput('width','calc(100% - 120px - 80px)')
 
                         }
                         if (type == "always" || type == "otherwise" || type === "true" || type === "false") {

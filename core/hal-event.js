@@ -5,6 +5,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,config);
         this.item = config.item;
         this.operator = config.operator;
+        this.change = config.change;
         this.compareValue = config.compareValue;
         this.compareType = config.compareType;
         this.outputValue = config.outputValue;
@@ -14,10 +15,11 @@ module.exports = function(RED) {
         node.events = RED.nodes.getNode(config.config);
 
         //Convert types
-        node.convertedCompareValue = utils.convertTo[node.compareType](node.compareValue);
+        var convertedCompareValue = utils.convertTo[node.compareType](node.compareValue);
 
         node.listener = function(event) {
-            if (utils.compare[node.operator](event.state,node.convertedCompareValue,event.oldState)){
+            if (node.change === 'true' && event.state === event.oldState) { return; }
+            if (utils.compare[node.operator](event.state,convertedCompareValue,event.oldState)){
                 var msg = {};
                 msg._msgid = RED.util.generateId();
                 msg.topic = event.topic ? event.topic : undefined;

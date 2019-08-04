@@ -11,6 +11,7 @@
             name:           {},
             item:           { value: "", required: true },
             operator:       { value: "", required: true },
+            change:         { value: "true" },
             compareValue:   { value: "" },
             compareType:    {},
             outputValue:    { value: "" },
@@ -24,8 +25,7 @@
         },
         oneditprepare: function () {
             var operators = [
-                { v: "always", t: "is updated"},               
-                { v: "change", t: "changes"},
+                { v: "always", t: "always"},               
                 { v: "eq", t: "==" },
                 { v: "neq", t: "!=" },
                 { v: "lt", t: "<" },
@@ -34,8 +34,8 @@
                 { v: "gte", t: ">=" },
                 { v: "cont", t: "contains" },
                 { v: "regex", t: "matches regex" },
-                { v: "true", t: "becomes true" },
-                { v: "false", t: "becomes false" }
+                { v: "true", t: "is true" },
+                { v: "false", t: "is false" }
             ];
             //get all item nodes and sort them alphabetically
             var itemsList = [];
@@ -113,15 +113,20 @@
                         $("#node-input-compareValue").typedInput('width','calc(70% - 120px)')
 
                     }
-                if (type == "full" || type == "update" || type == "change" || type === "true" || type === "false") {
+                if (type == "always" || type === "true" || type === "false") {
                     $("#node-input-compareValue").typedInput('hide');
                     $("#node-input-operator").css({ "width": "40%" });
                 } else {
                     $("#node-input-compareValue").typedInput('show');
                 }
-                if (type == "regex") {
-                    $('#node-input-compareValue').typedInput('types',['re']);
-                    $('#node-input-compareValue').typedInput('type','re');
+                if (type == "regex" || type == "lt" || type == "lte" || type == "gt" || type == "gte") {
+                    if (type == "regex") {
+                        $('#node-input-compareValue').typedInput('types',['re']);
+                        $('#node-input-compareValue').typedInput('type','re');
+                    } else {
+                        $('#node-input-compareValue').typedInput('types',['num']);
+                        $('#node-input-compareValue').typedInput('type','num');                        
+                    }
                 } else {
                     $('#node-input-compareValue').typedInput('types',['str','num','json']);
                     $('#node-input-compareValue').typedInput('type',this.compareType);
@@ -147,6 +152,13 @@
         <input type="hidden" id="node-input-compareType">
     </div>
     <div class="form-row">
+        <label for="node-input-change">&nbsp;</label>
+        <select id="node-input-change" style="width:40%;">
+            <option value="true" selected>on change</option>
+            <option value="false">on update</option>
+        </select>
+    </div>
+    <div class="form-row">
         <label for="node-input-outputValue"><i class="fa fa-sign-out"></i> Output</label>
         <input type="text" id="node-input-outputValue" style="width:70%"">
         <input type="hidden" id="node-input-outputType">
@@ -160,7 +172,8 @@
 <script type="text/x-red" data-help-name="event">
     <p>The Event node is used to initiate a flow when certain <i>Item</i> conditions are met.</p>
     <li><strong>Config</strong>: Used for firing events between nodes. Use the same config for all nodes that should be able to communicate.</li>
-    <li><strong>Item</strong>: Select which <i>Item</i> and what conditions are to be met for the event to trigger.</li>
+    <li><strong>Item/Trigger</strong>: Select which <i>Item</i> and what conditions are to be met for the event to trigger.</li>
+    <li><strong>on change/on update</strong>: If <em>on change</em> is selected the event only triggers if the value really changed, <em>on update</em> triggers every time the value is updated even if the value itself stays the same.</li>
     <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. The configured <code>msg.name</code> and <code>msg.topic</code> from the <i>Item</i> node is always added to the outgoing <code>msg</code>.</li>
     <li><strong>Name</strong>: Node name.</li>    
 </script>
