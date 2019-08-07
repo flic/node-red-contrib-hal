@@ -4,6 +4,8 @@ module.exports = function(RED) {
         this.host = n.name;
         var node = this;
 
+        this.setMaxListeners(0);
+
         this.event = function (type, payload) {
             this.emit(type, payload);
         }
