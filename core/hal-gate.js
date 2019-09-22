@@ -1,16 +1,40 @@
-module.exports = function(RED) {
-    var utils = require("../lib/utils");
+module.exports = function(RED) {    
+    function checkRules(node,msg) {
+        // Don't convert msg, flow, global. Assume same type.
+        var convertTo = {
+            'num':      function (value)    { return Number(value); },
+            'str':      function (value)    { return value+""; },
+            'bool':     function (value)    { return (value === 'true'); },
+            'json':     function (value)    { return JSON.parse(value); },
+            're':       function (value)    { return new RegExp(value) },
+            'msg':      function (value,node,msg)    { return RED.util.evaluateNodeProperty(value,'msg',node,msg); },
+            'flow':     function (value,node,msg)    { return RED.util.evaluateNodeProperty(value,'flow',node,msg); },
+            'global':   function (value,node,msg)    { return RED.util.evaluateNodeProperty(value,'global',node,msg); }
+        };
 
-    function checkRules(node) {
+        //a=state, b=comparison value
+        var compare = {
+            'eq':       function (a, b)     { return a === b; },
+            'neq':      function (a, b)     { return a !== b; },
+            'lt':       function (a, b)     { return ((typeof a == 'number') && (a < b)); },
+            'lte':      function (a, b)     { return ((typeof a == 'number') && (a <= b)); },
+            'gt':       function (a, b)     { return ((typeof a == 'number') && (a > b)); },
+            'gte':      function (a, b)     { return ((typeof a == 'number') && (a >= b)); },
+            'cont':     function (a, b)     { return (a + "").indexOf(b) !== -1; },
+            'regex':    function (a, b)     { return b.test(a+""); },
+            'true':     function (a)        { return a === true; },
+            'false':    function (a)        { return a === false; }
+        };
+
         var ruleMatch = 0;
         for (var i = 0; i < node.rules.length; i += 1) {
             var rule = node.rules[i];
             var item = RED.nodes.getNode(rule.item);
 
-            rule.value = utils.convertTo[rule.type](rule.value);
+            var cv = convertTo[rule.type](rule.value,node,msg);
 
             if (item.hasOwnProperty('payload')) {
-                if (utils.compare[rule.operator](item.state,rule.value,item.oldState)){
+                if (compare[rule.operator](item.state,cv,item.oldState)){
                     ruleMatch ++;
                 }
             }
@@ -44,29 +68,11 @@ module.exports = function(RED) {
 
         node.events = RED.nodes.getNode(config.config);
 
-        var gateOpen = checkRules(node);
-
         node.on('input', function(msg) {
-            if (gateOpen) {
+            if (checkRules(node,msg)) {
                 node.send([msg,null]);
             } else {
                 node.send([null,msg]);
-            }
-        });
-        
-        node.listener = function(event) {
-            gateOpen = checkRules(node);
-        }
-
-        for (var r in node.rules) {
-            node.events.addListener(node.rules[r].item, node.listener);
-        }
-        
-        node.on("close",function() { 
-            if (node.listener) {
-                for (var r in node.rules) {
-                    node.events.removeListener(node.rules[r].item, node.listener);
-                }
             }
         });
     }
