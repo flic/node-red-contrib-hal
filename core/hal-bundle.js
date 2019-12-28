@@ -12,21 +12,21 @@ module.exports = function(RED) {
         function queueSend() {
             const date = Date.now();
             if (date - qLast > node.ratelimit) {
-                if (queue.length > 0) {
+                if (Object.keys(queue).length > 0) {
                     qLast = date;
                     node.send(queue[0]);
                     queue.shift();
                 }
 
-                if (queue.length > 0) {
+                if (Object.keys(queue).length > 0) {
                     setTimeout(() => { queueSend(); },node.ratelimit)
                 }
             } else {
-                setTimeout(() => { queueSend(); }, node.ratelimit-(date-qLast))
+                setTimeout(() => { queueSend(); }, node.ratelimit-(date-qLast));
             }
 
-            if (queue.length > 0) {
-                node.status({text:queue.length});
+            if (Object.keys(queue).length > 0) {
+                node.status({text:Object.keys(queue).length > 0});
             } else {
                 node.status({});
             }
