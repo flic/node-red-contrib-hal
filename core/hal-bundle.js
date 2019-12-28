@@ -4,18 +4,33 @@ module.exports = function(RED) {
         this.name = config.name;
         this.bundleset = config.bundleset;
         this.ratelimit = Number(config.ratelimit);
-        var pause = 0;
+        var qLast = null;
+        var queue = [];
 
         var node = this;
 
-        function queueMsg(msg) {
-            setTimeout(() => { node.send(msg); }, pause);
+        function queueSend() {
+            const date = Date.now();
+            if (date - qLast > node.ratelimit) {
+                if (queue.length > 0) {
+                    qLast = date;
+                    node.send(queue[0]);
+                    queue.shift();
+                }
 
-            if (node.ratelimit > 0) {
-                pause += node.ratelimit;
-                setTimeout(() => { if (pause > 0) { pause -= node.ratelimit}; }, pause);
+                if (queue.length > 0) {
+                    setTimeout(() => { queueSend(); },node.ratelimit)
+                }
+            } else {
+                setTimeout(() => { queueSend(); }, node.ratelimit-(date-qLast))
             }
-        }   
+
+            if (queue.length > 0) {
+                node.status({text:queue.length});
+            } else {
+                node.status({});
+            }
+        }
 
         node.on('input', function(msg) {
             for (var i = 0; i < node.bundleset.length; i += 1) {
@@ -29,8 +44,9 @@ module.exports = function(RED) {
                 } else {
                     msgOut.payload = RED.util.evaluateNodeProperty(bundle.value,bundle.type,node,msg);
                 }
-                queueMsg(msgOut);
+                queue.push(msgOut);
             }
+            queueSend();
         });
     }
     RED.nodes.registerType("bundle",halBundle);
