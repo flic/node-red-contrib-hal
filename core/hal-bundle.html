@@ -125,7 +125,7 @@
             <ol id="node-input-bundle-container"</ol>
     </div>
     <div class="form-row">
-        <i class="fa fa-pause-circle-o"></i> Wait <input type="text" id="node-input-ratelimit" placeholder="0" style="display: inline-block; width: 60px; vertical-align: middle;"> ms between messages.
+        <i class="fa fa-pause-circle-o"></i> Wait <input type="number" id="node-input-ratelimit" style="display: inline-block; width: 70px; vertical-align: middle;"> ms between messages.
     </div>
 
 </script>
@@ -134,4 +134,5 @@
     <p>The Bundle node allows you to group multiple <i>Items</i> together and send their values on, one after another, when triggered.</p>
     <li><strong>Name</strong>: Node name.</li> 
     <li><strong>Output</strong>: Select what value the node should be sending on to the next node when triggered. If <i>item state</i> is selected, the property configured in the <i>Item</i> node as the <i>state</i> property is sent. The configured <code>msg.name</code> and <code>msg.topic</code> from the <i>Item</i> is always added to the outgoing <code>msg</code>.</li>
+    <li><string>Wait between messages</strong> allows you to rate limit the output.</li>
 </script>

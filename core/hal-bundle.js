@@ -3,7 +3,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,config);
         this.name = config.name;
         this.bundleset = config.bundleset;
-        this.ratelimit = config.ratelimit;
+        this.ratelimit = Number(config.ratelimit);
         var pause = 0;
 
         var node = this;
