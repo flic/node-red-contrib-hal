@@ -3,8 +3,19 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,config);
         this.name = config.name;
         this.bundleset = config.bundleset;
+        this.ratelimit = config.ratelimit;
+        var pause = 0;
 
         var node = this;
+
+        function queueMsg(msg) {
+            setTimeout(() => { node.send(msg); }, pause);
+
+            if (node.ratelimit > 0) {
+                pause += node.ratelimit;
+                setTimeout(() => { if (pause > 0) { pause -= node.ratelimit}; }, pause);
+            }
+        }   
 
         node.on('input', function(msg) {
             for (var i = 0; i < node.bundleset.length; i += 1) {
@@ -18,7 +29,7 @@ module.exports = function(RED) {
                 } else {
                     msgOut.payload = RED.util.evaluateNodeProperty(bundle.value,bundle.type,node,msg);
                 }
-                node.send(msgOut);
+                queueMsg(msgOut);
             }
         });
     }

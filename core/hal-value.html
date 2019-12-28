@@ -16,12 +16,7 @@
         },
         oneditprepare: function () {
             //get all item nodes and sort them alphabetically
-            var itemsList = [];
-            RED.nodes.eachNode(function (cf) {
-                if (cf.type === "item") {
-                    itemsList.push(cf);
-                }
-            });
+            const itemsList = RED.nodes.filterNodes({type: "item"});
             itemsList.sort(function(a, b) {
                 var textA = a.name.toUpperCase();
                 var textB = b.name.toUpperCase();

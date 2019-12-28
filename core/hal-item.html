@@ -11,12 +11,7 @@
             name:           { required: true, 
                 validate:function(v) {
                     //Check for name collisions
-                    var itemsList = [];
-                    RED.nodes.eachNode(function (cf) {
-                        if (cf.type === "item") {
-                            itemsList.push(cf);
-                        }
-                    });
+                    const itemsList = RED.nodes.filterNodes({type: "item"});
                     if(itemsList.length===0){ return true; }
                     for (var d in itemsList) {
                         if (v == itemsList[d].name && itemsList[d].id !== this.id) { return false; }

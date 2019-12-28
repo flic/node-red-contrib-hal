@@ -4,7 +4,8 @@
         color: '#EBA8FF',
         defaults: {
             name:       {},
-            bundleset:  {}
+            bundleset:  {},
+            ratelimit: { value: 0}
         },
         inputs:1,
         outputs:1,
@@ -14,12 +15,7 @@
         },
         oneditprepare: function () {
             //get all item nodes and sort them alphabetically
-            var itemsList = [];
-            RED.nodes.eachNode(function (cf) {
-                if (cf.type === "item") {
-                    itemsList.push(cf);
-                }
-            });
+            const itemsList = RED.nodes.filterNodes({type: "item"});
             itemsList.sort(function(a, b) {
                 var textA = a.name.toUpperCase();
                 var textB = b.name.toUpperCase();
@@ -128,6 +124,10 @@
     <div class="form-row">
             <ol id="node-input-bundle-container"</ol>
     </div>
+    <div class="form-row">
+        <i class="fa fa-pause-circle-o"></i> Wait <input type="text" id="node-input-ratelimit" placeholder="0" style="display: inline-block; width: 60px; vertical-align: middle;"> ms between messages.
+    </div>
+
 </script>
 
 <script type="text/x-red" data-help-name="bundle">
