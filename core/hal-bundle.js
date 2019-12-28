@@ -8,6 +8,8 @@ module.exports = function(RED) {
         var queue = [];
         var node = this;
 
+        if (isNaN(this.ratelimit)) { this.ratelimit = 0}
+
         function queueSend() {
             const date = Date.now();
             if (date - qLast > node.ratelimit) {
