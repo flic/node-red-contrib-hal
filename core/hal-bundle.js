@@ -6,7 +6,6 @@ module.exports = function(RED) {
         this.ratelimit = Number(config.ratelimit);
         var qLast = null;
         var queue = [];
-
         var node = this;
 
         function queueSend() {
