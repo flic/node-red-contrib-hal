@@ -145,6 +145,7 @@ module.exports = function(RED) {
             showState(node,node.state);
             
             node.events.event(node.id,node);
+            node.events.event('0',node);
 
             if (node.output === true) {
                 if (node.outputType == 'state') {

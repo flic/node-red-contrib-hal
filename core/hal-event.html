@@ -45,6 +45,9 @@
                 return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
             });
 
+            //All items
+            $("<option value='0'>[ All Items ]</option>").appendTo("#node-input-item");
+
             //Add items
             for (var d in itemsList) {
                 $("<option value='" + itemsList[d].id + "'> " + itemsList[d].name + "</option>").appendTo("#node-input-item");
