@@ -83,6 +83,11 @@
                 validate: /^(#$|(\+|[^+#]*)(\/(\+|[^+#]*))*(\/(\+|#|[^+#]*))?$)/,
                 hasValue: true
             }
+            var stateType = {
+                value: "state",
+                label: "item state",
+                hasValue: false
+            };
 
             //Incoming topic filter
             $('#node-input-filter').typedInput({
@@ -120,22 +125,36 @@
                     });
 
                     //Add rows
-                    var row1 = $('<div/>').appendTo(container);
+                    var row0 = $('<div/>').appendTo(container);
+                    var row1 = $('<div/>',{style:"margin-top:8px;"}).appendTo(container);
                     var row2 = $('<div/>',{style:"margin-top:8px;"}).appendTo(container);
 
                     //Add labels
+                    var label0 = $('<div/>',{style:"display:inline-block;text-align:right; width:70px; padding-right:10px; box-sizing:border-box;"})
+                        .appendTo(row0);
+                    label0.append('Property');
                     var label1 = $('<div/>',{style:"display:inline-block;text-align:right; width:70px; padding-right:10px; box-sizing:border-box;"})
                         .appendTo(row1);
                     label1.append('If value');
                     var label2 = $('<div/>',{style:"display:inline-block;text-align:right; width:70px; padding-right:10px; box-sizing:border-box;"})
                         .appendTo(row2);
-                    label2.append("Change to")
+                    label2.append("State =")
+
+                    //Add property value
+                    var propertyField = $('<input/>',{class:"node-input-rule-property",type:"text"})
+                        .appendTo(row0)
+                        .typedInput({
+                            default:'state',
+                            types:[stateType,'msg','flow','global','env']
+                        });
+                        propertyField.typedInput('width','calc(100% - 80px)');
 
                     //Add operators
                     var operatorField = $('<select/>',{class:"node-input-rule-operator"}).appendTo(row1);
                     for (var d in operators) {
                         operatorField.append($("<option></option>").val(operators[d].v).text(operators[d].t));
                     }
+
                     //Add compare value field
                     var valueField = $('<input/>',{class:"node-input-rule-compare",type:"text"})
                         .appendTo(row1)
@@ -194,6 +213,13 @@
                         } else {
                             valueField.typedInput('show');
                         }
+
+                        if (type == "always" || type == "otherwise") {
+                            row0.hide();
+                        } else {
+                            row0.show();
+                        }
+
                         if (type == "regex" || type == "lt" || type == "lte" || type == "gt" || type == "gte") {
                             if (type == "regex") {
                                 valueField.typedInput('types',['re']);
@@ -215,21 +241,20 @@
                         valueField.typedInput('type',rule.ct);
                         resultField.typedInput('value',rule.rv);
                         resultField.typedInput('type',rule.rt);
+                        if (rule.pt) {
+                            propertyField.typedInput('type',rule.pt);
+                        }
+                        propertyField.typedInput('value',rule.pv);
                     }
-
                     operatorField.trigger('change');
                     resultField.trigger('change');
+                    propertyField.trigger('change');
                 },
                 removable: true,
                 sortable: true,
                 addButton: "Rule"
             });
             //Add output
-            var stateType = {
-                value: "state",
-                label: "item state",
-                hasValue: false
-            };
             $('#node-input-outputValue').typedInput({
                 default: 'state',
                 typeField: $("#node-input-outputType"),
@@ -301,7 +326,9 @@
                     cv:rule.find(".node-input-rule-compare").typedInput('value'),
                     ct:rule.find(".node-input-rule-compare").typedInput('type'),
                     rv:rule.find(".node-input-rule-result").typedInput('value'),
-                    rt:rule.find(".node-input-rule-result").typedInput('type')
+                    rt:rule.find(".node-input-rule-result").typedInput('type'),
+                    pv:rule.find(".node-input-rule-property").typedInput('value'),
+                    pt:rule.find(".node-input-rule-property").typedInput('type')
                 }
                 node.rules.push(r);
             });

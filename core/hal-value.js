@@ -20,7 +20,7 @@ module.exports = function(RED) {
             if (node.outputType == 'state') {
                 msg.payload = item.state;
             } else {
-                msg.payload =  RED.util.evaluateNodeProperty(node.outputValue,'msg',node,item);
+                msg.payload = RED.util.getMessageProperty(item,node.outputValue);
             }
 
             node.send(msg);

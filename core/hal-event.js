@@ -24,10 +24,25 @@ module.exports = function(RED) {
                 msg._msgid = RED.util.generateId();
                 msg.topic = event.topic ? event.topic : undefined;
                 msg.name = event.name;
-                if (node.outputType == 'state') {
-                    msg.payload = event.state;
-                } else {
-                    msg.payload  = RED.util.evaluateNodeProperty(node.outputValue,node.outputType,node,event);
+
+                switch (node.outputType) {
+                    case 'state':
+                        msg.payload = event.state;
+                        break;
+                    case 'msg':
+                        msg.payload = RED.util.getMessageProperty(event,node.outputValue);
+                        break;
+                    case 'flow':
+                        msg.payload = node.context().flow.get(node.outputValue);
+                        break;
+                    case 'global':
+                        msg.payload = node.context().global.get(node.outputValue);
+                        break;
+                    case 'env':
+                        msg.payload = process.env[node.outputValue];
+                        break;
+                    default:
+                        msg.payload = RED.util.evaluateNodeProperty(node.outputValue,node.outputType);
                 }
                 node.send(msg);
             }

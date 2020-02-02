@@ -7,9 +7,10 @@ module.exports = function(RED) {
             'bool':     function (value)    { return (value === 'true'); },
             'json':     function (value)    { return JSON.parse(value); },
             're':       function (value)    { return new RegExp(value) },
-            'msg':      function (value,node,msg)    { return RED.util.evaluateNodeProperty(value,'msg',node,msg); },
-            'flow':     function (value,node,msg)    { return RED.util.evaluateNodeProperty(value,'flow',node,msg); },
-            'global':   function (value,node,msg)    { return RED.util.evaluateNodeProperty(value,'global',node,msg); }
+            'flow':     function (value)    { return node.context().flow.get(value); },
+            'global':   function (value)    { return node.context().global.get(value); },
+            'env':      function (value)    { return process.env[value]; },
+            'msg':      function (value,msg)    { return RED.util.getMessageProperty(msg,value); }
         };
 
         //a=state, b=comparison value
@@ -31,7 +32,7 @@ module.exports = function(RED) {
             var rule = node.rules[i];
             var item = RED.nodes.getNode(rule.item);
 
-            var cv = convertTo[rule.type](rule.value,node,msg);
+            var cv = convertTo[rule.type](rule.value,msg);
 
             if (item.hasOwnProperty('payload')) {
                 if (compare[rule.operator](item.state,cv,item.oldState)){

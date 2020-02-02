@@ -40,10 +40,25 @@ module.exports = function(RED) {
                 var msgOut = Object.assign({}, msg);
                 msgOut.topic = item.topic ? item.topic : msg.topic;
                 msgOut.name = item.name;
-                if (bundle.type == 'state') {
-                    msgOut.payload = item.state;
-                } else {
-                    msgOut.payload = RED.util.evaluateNodeProperty(bundle.value,bundle.type,node,msg);
+
+                switch (bundle.type) {
+                    case 'state':
+                        msgOut.payload = item.state;
+                        break;
+                    case 'msg':
+                        msgOut.payload = RED.util.getMessageProperty(msg,bundle.value);
+                        break;
+                    case 'flow':
+                        msgOut.payload = node.context().flow.get(bundle.value);
+                        break;
+                    case 'global':
+                        msgOut.payload = node.context().global.get(bundle.value);
+                        break;
+                    case 'env':
+                        msgOut.payload = process.env[bundle.value];
+                        break;
+                    default:
+                        msgOut.payload = RED.util.evaluateNodeProperty(bundle.value,bundle.type);
                 }
                 queue.push(msgOut);
             }

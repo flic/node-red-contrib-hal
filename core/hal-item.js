@@ -59,7 +59,6 @@ module.exports = function(RED) {
         this.bootstrapValue = config.bootstrapValue;
         this.bootstrapType = config.bootstrapType;
         this.events = RED.nodes.getNode(config.config);
-
         var node = this;
         showState(node,null);
 
@@ -90,15 +89,38 @@ module.exports = function(RED) {
                 }
             }
 
-            //Set state
-            var state = RED.util.evaluateNodeProperty(node.stateProperty,'msg',node,msg);
+            var state =  RED.util.getMessageProperty(msg,node.stateProperty);
 
             var ruleMatch = 0;
             for (var i = 0; i < node.rules.length; i += 1) {
                 var rule = node.rules[i];
+                if (rule.hasOwnProperty('pt') === false) {
+                    rule.pt = 'state';
+                }
                 rule.cv = utils.convertTo[rule.ct](rule.cv);
 
-                if (utils.compare[rule.op](state,rule.cv,ruleMatch)) {
+                var compareValue;
+                switch (rule.pt) {
+                    case 'state':
+                        compareValue = RED.util.getMessageProperty(msg,node.stateProperty);
+                        break;
+                    case 'msg':
+                        compareValue = RED.util.getMessageProperty(msg,rule.pv);
+                        break;
+                    case 'flow':
+                        compareValue = this.context().flow.get(rule.pv);
+                        break;
+                    case 'global':
+                        compareValue = this.context().global.get(rule.pv);
+                        break;
+                    case 'env':
+                        compareValue = process.env[rule.pv];
+                        break;
+                    default:
+                        return;
+                }
+
+                if (utils.compare[rule.op](compareValue,rule.cv,ruleMatch)) {
                     if (rule.op != 'always') { ruleMatch++; };
                     switch (rule.rt) {
                         case 'str':
@@ -151,7 +173,7 @@ module.exports = function(RED) {
                 if (node.outputType == 'state') {
                     var payload = node.state;
                 } else {
-                    var payload = RED.util.evaluateNodeProperty(node.outputValue,node.outputType,node,msg);
+                    var payload = RED.util.getMessageProperty(msg,node.outputValue);
                 }
                 if (node.outputOnChange) {
                     if (node.outputPayload == payload) {

@@ -86,7 +86,7 @@
             $('#node-input-outputValue').typedInput({
                 default: 'state',
                 typeField: $("#node-input-outputType"),
-                types: [stateType,'msg','flow','global','str','num','bool','json']
+                types: [stateType,'msg','flow','global','env','str','num','bool','json']
             });
             if (this.outputType) {
                 $("#node-input-outputValue").typedInput('type',this.outputType);
