@@ -102,7 +102,7 @@ module.exports = function(RED) {
                 var compareValue;
                 switch (rule.pt) {
                     case 'state':
-                        compareValue = RED.util.getMessageProperty(msg,node.stateProperty);
+                        compareValue = state;
                         break;
                     case 'msg':
                         compareValue = RED.util.getMessageProperty(msg,rule.pv);
