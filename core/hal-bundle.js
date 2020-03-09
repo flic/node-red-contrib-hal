@@ -37,6 +37,10 @@ module.exports = function(RED) {
             for (var i = 0; i < node.bundleset.length; i += 1) {
                 var bundle = node.bundleset[i];
                 var item = RED.nodes.getNode(bundle.item);
+                if (item === null) {
+                    node.error("Can't find item with id "+bundle.item);
+                    continue;
+                }
                 var msgOut = Object.assign({}, msg);
                 msgOut.topic = item.topic ? item.topic : msg.topic;
                 msgOut.name = item.name;
