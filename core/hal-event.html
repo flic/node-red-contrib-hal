@@ -11,7 +11,7 @@
             name:           {},
             item:           { value: "", required: true },
             operator:       { value: "", required: true },
-            change:         { value: "true" },
+            change:         { value: "1" },
             compareValue:   { value: "" },
             compareType:    {},
             outputValue:    { value: "" },
@@ -75,7 +75,19 @@
             });
             if (this.compareValue) {
                 $("#node-input-compareValue").typedInput('value',this.compareValue).typedInput('type',this.compareType);                           
-            } 
+            }
+
+            //On change, update
+            $("<option value='0'>on update</option>").appendTo("#node-input-change");
+            $("<option value='1'>on change</option>").appendTo("#node-input-change");
+            $("<option value='2'>on change (ignore initial value)</option>").appendTo("#node-input-change");
+            if (this.change === 'true') {
+                this.change = '1';
+            } else if (this.change === 'false') {
+                this.change = '0';
+            }
+            $("#node-input-change").val(this.change);
+            $('#node-input-change').trigger('change');  
 
             //Add output
             var stateType = {
@@ -151,10 +163,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-change">&nbsp;</label>
-        <select id="node-input-change" style="width:40%;">
-            <option value="true" selected>on change</option>
-            <option value="false">on update</option>
-        </select>
+        <select id="node-input-change" style="width:40%;"></select>
     </div>
     <div class="form-row">
         <label for="node-input-outputValue"><i class="fa fa-sign-out"></i> Output</label>

@@ -18,7 +18,9 @@ module.exports = function(RED) {
         var convertedCompareValue = utils.convertTo[node.compareType](node.compareValue);
 
         node.listener = function(event) {
-            if (node.change === 'true' && event.state === event.oldState) { return; }
+            if (node.change === 'true') { node.change = '1'}
+            if (node.change == '2' && event.oldState == undefined) { return; }
+            if (node.change == '1' && event.state === event.oldState) { return; }
             if (utils.compare[node.operator](event.state,convertedCompareValue,event.oldState)){
                 var msg = {};
                 msg._msgid = RED.util.generateId();
