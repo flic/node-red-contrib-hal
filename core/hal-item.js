@@ -65,18 +65,19 @@ module.exports = function(RED) {
         // Send bootstrap output
         if (node.bootstrap === true) {
             setTimeout(function() {
-                node.emit("input",null);
+                var msg = {};
+                msg.payload = RED.util.evaluateNodeProperty(node.bootstrapValue,node.bootstrapType,node);
+                msg._msgid = RED.util.generateId();
+                msg.topic = node.topic ? node.topic : null;
+                msg.bootstrap = true;
+                node.emit("input",msg);
             },0);
         }
 
         node.on('input', function(msg) {
-            if (msg == null) {
+            if (msg.bootstrap == true) {
                 // Bootstrap
                 if (node.output === true) {
-                    var msg = {};
-                    msg.payload = RED.util.evaluateNodeProperty(node.bootstrapValue,node.bootstrapType,node);
-                    msg._msgid = RED.util.generateId();
-                    msg.topic = node.topic ? node.topic : null;
                     node.send(msg);
                 }
                 return;
