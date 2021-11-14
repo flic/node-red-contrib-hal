@@ -1,6 +1,8 @@
 # node-red-contrib-hal [![npm version](https://badge.fury.io/js/node-red-contrib-hal.svg)](https://badge.fury.io/js/node-red-contrib-hal)
 A set of nodes to help with basic home automation logic.
 
+**Note:** You might want to take a look at the new https://github.com/flic/node-red-contrib-hal2
+
 **Note:** Breaking changes between 0.x and 1.x! The Topic filter value on all Item nodes and Item value on Event nodes needs to be manually updated.
 
 ## Install
